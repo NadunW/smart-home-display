@@ -63,6 +63,14 @@ If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn'
 `supabase migration repair --status applied <version> --remote=<ref> --password <db-password>`.
 
 ### 4. Host the app
+
+**GitHub Pages (set up in this repo):** `.github/workflows/deploy-pages.yml` publishes the `web` folder on every change to `web/` on `main`. One-time setup:
+1. The repo must be public (or on a paid GitHub plan). It contains no secrets: only the public Supabase key.
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+3. Run **Actions → Deploy app to GitHub Pages → Run workflow** (or push a change to `web/`).
+4. The app is then at `https://<user>.github.io/<repo>/`. Put that address in Supabase's **Site URL** and **Redirect URLs** (Authentication → URL Configuration).
+
+**Or any other static host:**
 1. Edit `web/config.js` and fill in the Project URL and the publishable (or anon) key from **Project Settings → API**. That key is meant to be public.
 2. Put the `web` folder online. Any static host works:
    - **Netlify Drop**: drag the `web` folder onto app.netlify.com/drop.

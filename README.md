@@ -7,7 +7,7 @@ web/                         the app (static files: host anywhere)
   index.html
   config.js                  ← your Supabase URL + key go here
 supabase/
-  migrations/0001_init.sql   database, access rules, create/join family
+  migrations/                database, access rules, create/join family (applied in order)
   functions/vasttrafik/      server function that holds the Västtrafik key
 ```
 
@@ -24,7 +24,7 @@ supabase/
 
 ### 1. Supabase project
 1. Create a free project at supabase.com.
-2. **SQL Editor** → New query → paste all of `supabase/migrations/0001_init.sql` → **Run**.
+2. **SQL Editor** → New query → paste each file in `supabase/migrations/` in order → **Run**.
 3. **Authentication → URL Configuration**: set **Site URL** to the address where you'll host the app (step 4), so the confirmation and password-reset emails link back to it.
 
 ### 2. Västtrafik key
@@ -57,8 +57,10 @@ Add these under **Repo → Settings → Secrets and variables → Actions → Ne
 
 If the migration step fails with an IPv6 error, add a `SUPABASE_DB_URL` secret instead, set to the **Session pooler** connection string from the project's **Connect** button. The workflow uses it when it's present.
 
-If you already ran `0001_init.sql` by hand in the SQL Editor, tell the CLI once so it doesn't run it again:
-`supabase migration repair --status applied 0001 --remote=<ref> --password <db-password>`. Add new database changes as new files (`supabase/migrations/0002_….sql`); never edit one that has already been applied.
+Migration files are named by the version Supabase records (`<timestamp>_<name>.sql`), so the CLI can tell which ones a project already has. Add new database changes as new files with a later timestamp (e.g. `supabase migration new add_meals`); never edit one that has already been applied.
+
+If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn't run it again:
+`supabase migration repair --status applied <version> --remote=<ref> --password <db-password>`.
 
 ### 4. Host the app
 1. Edit `web/config.js` and fill in the Project URL and the publishable (or anon) key from **Project Settings → API**. That key is meant to be public.

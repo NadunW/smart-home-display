@@ -83,6 +83,22 @@ If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn'
 - **iPad**: Safari → Share → *Add to Home Screen*, then Guided Access to lock it to the app. Set Auto-Lock to Never.
 - The app also asks the browser to keep the screen awake after the first tap.
 
+## Android wall app
+
+`android/` is a small app that shows the page full screen, keeps the screen on and lets the page dim and wake the screen. GitHub builds it automatically (`.github/workflows/android.yml`); every build on `main` is published as the latest release.
+
+**Install on the tablet**
+1. On the tablet, open `https://github.com/NadunW/smart-home-display/releases/latest/download/family-display.apk`.
+2. Allow installing from your browser when Android asks (Settings → Apps → Special access → Install unknown apps).
+3. Open **Family Display**, sign in, and pick your screen rules in **Settings → Display → Wall screen**.
+4. Optional, for a true kiosk: press Home, choose **Family Display** and *Always*. It then starts by itself after a reboot.
+
+**Screen rules** (per device): bright during the daily bright hours, during bus time on weekday mornings, from a set number of minutes before any appointment or reminder with a time until 10 minutes after it, and for a few minutes after a tap. Otherwise dimmed, and darkest at night. A tap on a dimmed screen only wakes it, so you don't press a button by accident.
+
+**Hidden menu**: tap the top-left corner five times quickly → reload, Android settings, choose home app, close.
+
+**Updates**: install the new APK over the old one. All builds are signed with the key in `android/app/keystore/`, so they update in place. To use your own key instead, add `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` as repository secrets (changing keys means uninstalling once).
+
 ## Notes
 - The free Supabase tier pauses a project after a week with no activity. A wall display that's always on keeps it active.
 - Supabase's built-in email sender is rate-limited and meant for testing. For more than a handful of families, add your own SMTP under Authentication → Emails.

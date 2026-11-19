@@ -52,7 +52,7 @@ h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
 .dlg h3,.gate h1{margin:0;font-size:24px}
 label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
 input,select{font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);min-height:44px}
-.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:end}
 .seg{display:flex;gap:6px;flex-wrap:wrap}.seg button{background:var(--card);padding:0 14px}.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
 .mem{display:grid;grid-template-columns:minmax(0,1fr) 56px 44px;gap:8px}.mem input[type=color]{padding:4px}
 .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.danger{color:var(--acc);margin-right:auto}
@@ -67,6 +67,7 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 @media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.tasks{grid-column:1/-1;order:-1}}
 @media(max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}.wx{margin-left:0}header{gap:12px 20px}.clock{font-size:64px}.tools{width:100%}.tools .pri{flex:1}}
 body,.card,.dlg{transition:background-color .8s,color .8s}
+body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;pointer-events:none;z-index:20}
 @media(prefers-reduced-motion:reduce){.bar i,body,.card,.dlg{transition:none}}
 </style></head><body>
 
@@ -145,6 +146,16 @@ body,.card,.dlg{transition:background-color .8s,color .8s}
   <h2 style="margin:8px 0 0">Display</h2>
   <label>Theme<select id="sTheme"><option value="sun">Automatic: dark from sunset to sunrise</option><option value="device">Follow this device’s setting</option><option value="light">Always light</option><option value="dark">Always dark</option></select></label>
   <p class="msg" style="margin:0">Saved on this device only, so the wall tablet and phones can each have their own.</p>
+  <div id="screenSet" style="display:grid;gap:10px" hidden>
+    <h2 style="margin:8px 0 0">Wall screen</h2>
+    <p class="msg" style="margin:0">The screen stays dim and wakes on its own. Leave a time empty to turn that rule off.</p>
+    <div class="row"><label>Bright every day from<input type="time" id="scDayFrom"></label><label>until<input type="time" id="scDayTo"></label></div>
+    <div class="row"><label>Bus time, weekdays from<input type="time" id="scBusFrom"></label><label>until<input type="time" id="scBusTo"></label></div>
+    <div class="row"><label>Night (darkest) from<input type="time" id="scNightFrom"></label><label>until<input type="time" id="scNightTo"></label></div>
+    <div class="row"><label>Wake before appointments (minutes)<input type="number" id="scLead" min="0" max="120" inputmode="numeric"></label><label>Stay bright after a tap (minutes)<input type="number" id="scIdle" min="1" max="60" inputmode="numeric"></label></div>
+    <label>Dimmed brightness<input type="range" id="scDim" min="1" max="60" style="padding:0"></label>
+    <p class="msg" id="scNow" role="status"></p>
+  </div>
   <h2 style="margin:8px 0 0">Invite family members</h2>
   <p class="msg" style="margin:0">They create their own account, choose “Join family” and type this code:</p>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span class="code" id="sCode"></span><button type="button" class="btn" id="sNewCode">New code</button></div>
@@ -211,7 +222,7 @@ function stopBoard(){timers.forEach(clearInterval);timers=[];if(chan){sb.removeC
 const norm=r=>({...r,time:r.time?String(r.time).slice(0,5):''});
 async function loadAll(){if(!hh)return;const[p,i]=await Promise.all([sb.from('people').select('*').eq('household_id',hh.id).order('sort'),sb.from('items').select('*').eq('household_id',hh.id)]);
   if(p.error||i.error){status('Can’t reach the server right now — showing what’s loaded.');return}
-  people=p.data;items=i.data.map(norm);status('Synced · '+pad(now().getHours())+':'+pad(now().getMinutes()));render()}
+  people=p.data;items=i.data.map(norm);applyScreen();status('Synced · '+pad(now().getHours())+':'+pad(now().getMinutes()));render()}
 let reT=0;const refetch=()=>{clearTimeout(reT);reT=setTimeout(loadAll,300)};
 function subscribe(){const f='household_id=eq.'+hh.id;
   chan=sb.channel('hh-'+hh.id)
@@ -312,7 +323,7 @@ function openSet(welcome){draft={people:people.map(p=>({...p})),gid:hh.vt_gid,st
   if(welcome&&!draft.people.length)draft.people.push({name:'',color:PAL[0]});
   $('#setWelcome').hidden=!welcome;$('#sName').value=hh.name;drawMems();$('#sStopQ').value='';$('#sStopRes').innerHTML='';$('#sPlaceQ').value='';$('#sPlaceRes').innerHTML='';
   $('#sStopCur').textContent=draft.stop?'Current stop: '+draft.stop:'No stop chosen yet.';$('#sPlaceCur').textContent=draft.place?'Current town: '+draft.place:'No town chosen yet.';
-  $('#sTheme').value=themePref();$('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
+  $('#sTheme').value=themePref();fillScreenSettings();$('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
 $('#setBtn').onclick=()=>openSet(false);
 $('#mems').oninput=e=>{const t=e.target;if(t.dataset.mi!=null)draft.people[t.dataset.mi].name=t.value;if(t.dataset.mc!=null)draft.people[t.dataset.mc].color=t.value};
 $('#mems').onclick=e=>{const i=e.target.closest('[data-mr]')?.dataset.mr;if(i!=null){draft.people.splice(+i,1);drawMems()}};
@@ -358,12 +369,44 @@ function applyTheme(){const p=themePref();let t='';
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme)}catch(e){}
 $('#sTheme').onchange=e=>{try{localStorage.setItem(THK,e.target.value)}catch(err){}applyTheme()};
 
+/* ---------- wall screen (Android app only) ---------- */
+// The app exposes window.FamilyDisplay.setBrightness(level). The rules live here because this is
+// where the family's appointments are. Settings are kept per device.
+const isApp=!!(window.FamilyDisplay&&window.FamilyDisplay.setBrightness);
+const SCK='fhd.screen',SC_DEF={dayFrom:'17:00',dayTo:'19:30',busFrom:'06:45',busTo:'08:15',nightFrom:'22:00',nightTo:'06:30',lead:15,idle:3,dim:12};
+let sc={...SC_DEF};try{sc={...SC_DEF,...JSON.parse(localStorage.getItem(SCK)||'{}')}}catch(e){}
+let lastTouch=Date.now(),screenLevel=null,screenOn=true,swallowUntil=0;
+const toMin=t=>{if(!t)return null;const[h,m]=String(t).split(':').map(Number);return h*60+m};
+const inWindow=(m,a,b)=>{a=toMin(a);b=toMin(b);if(a==null||b==null||a===b)return false;return a<b?m>=a&&m<b:(m>=a||m<b)};
+function screenReason(){const d=now(),m=d.getHours()*60+d.getMinutes(),wd=d.getDay()>=1&&d.getDay()<=5;
+  if(Date.now()-lastTouch<(+sc.idle||3)*6e4)return{on:true,why:'someone tapped the screen'};
+  if(hh&&+sc.lead>0){const t=ymd(d);
+    for(const i of items){if(i.date!==t||!i.time||(i.type==='task'&&isDone(i)))continue;const im=toMin(i.time);
+      if(m>=im-sc.lead&&m<=im+10)return{on:true,why:i.title+' at '+i.time}}}
+  if(wd&&inWindow(m,sc.busFrom,sc.busTo))return{on:true,why:'bus time'};
+  if(inWindow(m,sc.dayFrom,sc.dayTo))return{on:true,why:'bright hours'};
+  if(inWindow(m,sc.nightFrom,sc.nightTo))return{on:false,night:true,why:'night'};
+  return{on:false,why:'nothing coming up'}}
+function applyScreen(){if(!isApp)return;const r=screenReason(),lvl=r.on?-1:r.night?0:(+sc.dim||12)/100;
+  screenOn=r.on;document.body.classList.toggle('night',!!r.night);
+  if(lvl!==screenLevel){screenLevel=lvl;try{window.FamilyDisplay.setBrightness(lvl)}catch(e){}}
+  const el=$('#scNow');if(el)el.textContent=(r.on?'Bright now: ':r.night?'Night mode: ':'Dimmed: ')+r.why+'.'}
+// A tap on a dimmed screen only wakes it; it doesn't press whatever was under the finger.
+document.addEventListener('pointerdown',e=>{if(!isApp)return;const wasDim=!screenOn;lastTouch=Date.now();
+  if(wasDim){swallowUntil=Date.now()+700;e.preventDefault();e.stopPropagation();applyScreen()}},true);
+document.addEventListener('click',e=>{if(Date.now()<swallowUntil){e.preventDefault();e.stopPropagation()}},true);
+const SC_FIELDS={scDayFrom:'dayFrom',scDayTo:'dayTo',scBusFrom:'busFrom',scBusTo:'busTo',scNightFrom:'nightFrom',scNightTo:'nightTo',scLead:'lead',scIdle:'idle',scDim:'dim'};
+function fillScreenSettings(){$('#screenSet').hidden=!isApp;if(!isApp)return;for(const[id,k]of Object.entries(SC_FIELDS))$('#'+id).value=sc[k]??'';applyScreen()}
+for(const[id,k]of Object.entries(SC_FIELDS))$('#'+id).addEventListener('input',e=>{const v=e.target.value;
+  sc[k]=e.target.type==='number'||e.target.type==='range'?(v===''?0:+v):v;try{localStorage.setItem(SCK,JSON.stringify(sc))}catch(err){}
+  if(id==='scDim')screenLevel=null;applyScreen()});
+
 /* ---------- keep a wall tablet awake ---------- */
 let lock=null;const wake=async()=>{try{if('wakeLock' in navigator&&!lock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>lock=null)}}catch(e){}};
 document.addEventListener('click',wake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)wake()});
 
 /* ---------- go ---------- */
-applyTheme();tick();setInterval(()=>{tick();renderBus();applyTheme()},15000);
+applyTheme();tick();applyScreen();setInterval(()=>{tick();renderBus();applyTheme();applyScreen()},15000);
 let lastDay=ymd(now());setInterval(()=>{if(ymd(now())!==lastDay){lastDay=ymd(now());render()}},6e4);
 let started=false;
 sb.auth.onAuthStateChange((ev,session)=>{

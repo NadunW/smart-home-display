@@ -1,0 +1,63 @@
+# Family Home Display
+
+A kitchen/wall display for the family: clock, weather, countdown, today's appointments, everyone's tasks with progress, reminders and live Västtrafik departures. Family members sign in with their own accounts; everything syncs live between the wall tablet and phones.
+
+```
+web/                         the app (static files: host anywhere)
+  index.html
+  config.js                  ← your Supabase URL + key go here
+supabase/
+  migrations/0001_init.sql   database, access rules, create/join family
+  functions/vasttrafik/      server function that holds the Västtrafik key
+```
+
+## How it works
+
+- **Accounts**: email + password through Supabase Auth.
+- **Families**: whoever signs up first creates the family and gets an 8-letter **join code** (shown in Settings). Others create their own account, choose *Join family* and enter the code. The creator can issue a new code anytime.
+- **People on the display** (kids, grandparents) don't need accounts. They're just names and colours.
+- **Privacy**: row-level security means a signed-in user only ever sees rows for families they belong to.
+- **Bus times**: the app calls the `vasttrafik` server function, which logs in to Västtrafik with *your* key, looks up departures and caches them for 20 seconds. The key never reaches the browser, and only signed-in users can call it.
+- **Weather**: Open-Meteo, free, no key.
+
+## Setup (about 20 minutes)
+
+### 1. Supabase project
+1. Create a free project at supabase.com.
+2. **SQL Editor** → New query → paste all of `supabase/migrations/0001_init.sql` → **Run**.
+3. **Authentication → URL Configuration**: set **Site URL** to the address where you'll host the app (step 4), so the confirmation and password-reset emails link back to it.
+
+### 2. Västtrafik key
+1. Sign in at developer.vasttrafik.se and create an application.
+2. Subscribe the application to **Planera Resa v4**.
+3. Copy the application's key (client ID) and secret.
+
+### 3. Deploy the server function
+**Easiest, from the dashboard:** Edge Functions → *Deploy a new function* → *Via editor* → name it exactly `vasttrafik` → paste `supabase/functions/vasttrafik/index.ts` → Deploy. Then Edge Functions → **Secrets** → add `VT_CLIENT_ID` and `VT_CLIENT_SECRET`.
+
+**Or with the CLI:**
+```bash
+supabase link --project-ref YOUR-PROJECT-REF
+supabase secrets set VT_CLIENT_ID=xxxx VT_CLIENT_SECRET=yyyy
+supabase functions deploy vasttrafik
+```
+Keep "Verify JWT" on (the default), so only signed-in users can use your key.
+
+### 4. Host the app
+1. Edit `web/config.js` and fill in the Project URL and the publishable (or anon) key from **Project Settings → API**. That key is meant to be public.
+2. Put the `web` folder online. Any static host works:
+   - **Netlify Drop**: drag the `web` folder onto app.netlify.com/drop.
+   - **GitHub Pages**: push the folder to a repo and enable Pages.
+3. Put that address into Supabase's Site URL (step 1.3).
+
+### 5. Wall tablet
+- Open the address, create your account, create the family, add people, search for your stop and town in Settings.
+- **Android**: Fully Kiosk Browser (or Chrome → *Add to home screen*) and keep the charger in.
+- **iPad**: Safari → Share → *Add to Home Screen*, then Guided Access to lock it to the app. Set Auto-Lock to Never.
+- The app also asks the browser to keep the screen awake after the first tap.
+
+## Notes
+- The free Supabase tier pauses a project after a week with no activity. A wall display that's always on keeps it active.
+- Supabase's built-in email sender is rate-limited and meant for testing. For more than a handful of families, add your own SMTP under Authentication → Emails.
+- Daily and weekly tasks reset automatically: a daily task counts as done only on the day it was ticked, a weekly one only in that ISO week.
+- The Västtrafik response fields were taken from their v4 API model (`estimatedOtherwisePlannedTime`, `serviceJourney.line`, …). If a field ever comes back empty, check the function logs in the Supabase dashboard.

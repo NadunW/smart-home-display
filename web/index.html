@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#121116"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>Family Home Display</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#121116);--card:light-dark(#f1f1f3,#1d1c23);--ink:light-dark(#15141a,#f2f1f5);--mute:light-dark(#6a6874,#9a98a6);--line:light-dark(#dcdbe1,#2c2b34);--acc:#ff5a36}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Outfit,system-ui,sans-serif;overflow-x:clip}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;min-height:44px;border-radius:12px}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 32px;padding:20px max(2.5vw,16px) 8px}
+.clock{font-size:clamp(64px,9vw,120px);font-weight:600;line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.date{font-size:22px;font-weight:500}.date small{display:block;color:var(--mute);font-size:16px;font-weight:400}
+.wx{display:flex;align-items:center;gap:10px;margin-left:auto}.wx b{font-size:44px;font-weight:600;line-height:1}.wx span{color:var(--mute);font-size:15px;line-height:1.3}
+.count{background:var(--acc);color:#fff;border-radius:16px;padding:10px 16px;font-weight:500;font-size:17px}.count b{font-size:28px;display:block;line-height:1.05}
+.tools{display:flex;gap:8px}
+.btn{background:var(--card);padding:0 16px;font-weight:500}.btn.pri{background:var(--ink);color:var(--bg)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr);gap:16px;padding:12px max(2.5vw,16px) 24px}
+.card{background:var(--card);border-radius:22px;padding:18px 20px}
+.col{display:grid;gap:16px;align-content:start}
+h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
+.ev{display:grid;grid-template-columns:62px 6px minmax(0,1fr);gap:12px;align-items:start;padding:8px 0;border-top:1px solid var(--line);width:100%;text-align:left;min-height:52px;border-radius:0}
+.ev:first-of-type{border-top:0}.ev .t{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ev .dot{width:6px;height:100%;min-height:30px;border-radius:3px}.ev .n{font-size:18px;font-weight:500}.ev .s{color:var(--mute);font-size:14px}
+.ev.past{opacity:.45}
+.empty{color:var(--mute);padding:6px 0;margin:0}
+.big{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}.big b{font-size:44px;line-height:1;font-weight:600}.big span{color:var(--mute)}
+.who{margin-top:14px}.who-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:600;font-size:15px;flex:none}
+.who-h b{font-size:18px;font-weight:600}.who-h span:last-child{margin-left:auto;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-bottom:6px}.bar i{display:block;height:100%;border-radius:4px;transition:width .5s}
+.task{display:flex;align-items:center;gap:6px}
+.chk{width:44px;flex:none;display:grid;place-items:center}
+.chk i{width:26px;height:26px;border-radius:8px;border:2px solid var(--mute);display:grid;place-items:center}
+.task.done .chk i{background:var(--c);border-color:var(--c)}.task.done .chk i::after{content:"";width:10px;height:6px;border:solid #fff;border-width:0 0 3px 3px;transform:translate(0,-1px) rotate(-45deg)}
+.task .lbl{flex:1;text-align:left;font-size:17px;padding:0 4px}.task.done .lbl{color:var(--mute);text-decoration:line-through}
+.task .rep{font-size:13px;color:var(--mute);white-space:nowrap}
+.dep{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.dep:first-of-type{border-top:0}
+.line{background:#00394d;color:#fff;font-weight:700;border-radius:9px;text-align:center;padding:5px 0;font-size:18px}
+.dep .d{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dep .d small{color:var(--mute);font-size:14px}
+.dep .m{font-size:22px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.dep .m.soon{color:var(--acc)}
+.note{font-size:13px;color:var(--mute);margin:8px 0 0}
+.rem{display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.rem:first-of-type{border-top:0}.rem .lbl{flex:1;text-align:left;font-size:17px}.rem small{color:var(--mute);display:block;font-size:14px}
+.ok{width:44px;flex:none;color:var(--mute);font-size:22px}
+.ov{position:fixed;inset:0;background:rgb(0 0 0/.5);display:none;place-items:center;padding:16px;z-index:9}.ov.on{display:grid}
+.dlg{background:var(--bg);border-radius:22px;padding:22px;width:min(520px,100%);max-height:90vh;overflow:auto;display:grid;gap:12px}
+.dlg h3,.gate h1{margin:0;font-size:24px}
+label{display:grid;gap:4px;font-size:14px;color:var(--mute)}
+input,select{font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);min-height:44px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button{background:var(--card);padding:0 14px}.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.mem{display:grid;grid-template-columns:minmax(0,1fr) 56px 44px;gap:8px}.mem input[type=color]{padding:4px}
+.acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.danger{color:var(--acc);margin-right:auto}
+.find{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.pick{display:grid;gap:6px}.pick .btn{text-align:left}
+.code{font-size:28px;font-weight:600;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.gate .dlg{background:var(--card)}
+.gate .clock{font-size:64px;margin-bottom:4px}
+.msg{font-size:14px;margin:0;color:var(--mute)}.msg.err{color:var(--acc)}
+.status{color:var(--mute);font-size:13px;padding:0 max(2.5vw,16px) 20px}
+hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
+@media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.tasks{grid-column:1/-1;order:-1}}
+@media(max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}.wx{margin-left:0}header{gap:12px 20px}.clock{font-size:64px}.tools{width:100%}.tools .pri{flex:1}}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style></head><body>
+
+<!-- Sign in -->
+<section class="gate" id="vAuth" hidden><form class="dlg" id="fAuth">
+  <div class="clock" data-clock>--:--</div>
+  <h1 id="authH">Sign in</h1>
+  <p class="msg">Your family's tasks, appointments, reminders and next bus on one screen.</p>
+  <label>Email<input type="email" id="aEmail" autocomplete="email" required></label>
+  <label id="lPass">Password<input type="password" id="aPass" autocomplete="current-password" minlength="8" required></label>
+  <p class="msg" id="aMsg" role="status"></p>
+  <button class="btn pri" id="aGo">Sign in</button>
+  <div class="acts" style="justify-content:space-between"><button type="button" class="btn" id="aSwap">Create an account</button><button type="button" class="btn" id="aForgot">Forgot password?</button></div>
+</form></section>
+
+<!-- New password after reset link -->
+<section class="gate" id="vReset" hidden><form class="dlg" id="fReset">
+  <h1>Choose a new password</h1>
+  <label>New password<input type="password" id="rPass" autocomplete="new-password" minlength="8" required></label>
+  <p class="msg" id="rMsg" role="status"></p>
+  <button class="btn pri">Save password</button>
+</form></section>
+
+<!-- Create or join a household -->
+<section class="gate" id="vSetup" hidden><div class="dlg">
+  <h1>Set up your family</h1>
+  <form id="fCreate" style="display:grid;gap:10px"><label>Family name<input id="cName" placeholder="e.g. Familjen Andersson" maxlength="60" required></label><button class="btn pri">Create family</button></form>
+  <hr>
+  <form id="fJoin" style="display:grid;gap:10px"><label>Already have a family here? Enter its code<input id="jCode" placeholder="8-letter code" maxlength="8" autocapitalize="characters" autocomplete="off" required></label><button class="btn">Join family</button></form>
+  <p class="msg" id="sMsg" role="status"></p>
+  <button type="button" class="btn" data-signout>Sign out</button>
+</div></section>
+
+<!-- Display -->
+<div id="vBoard" hidden>
+<header>
+  <div class="clock" data-clock>--:--</div>
+  <div class="date" id="date"></div>
+  <div class="wx" id="wx"></div>
+  <div id="count"></div>
+  <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="setBtn">Settings</button></div>
+</header>
+<main class="grid">
+  <div class="col"><section class="card"><h2>Today</h2><div id="today"></div></section>
+    <section class="card"><h2>Coming up</h2><div id="soon"></div></section></div>
+  <section class="card tasks"><h2>Family tasks</h2><div id="tasks"></div></section>
+  <div class="col"><section class="card"><h2 id="busH">Next departures</h2><div id="bus"></div></section>
+    <section class="card"><h2>Reminders</h2><div id="rems"></div></section></div>
+</main>
+<p class="status" id="status"></p>
+</div>
+
+<div class="ov" id="ovAdd"><form class="dlg" id="fAdd">
+  <h3 id="addH">Add</h3>
+  <div class="seg" id="kind"><button type="button" data-k="task">Task</button><button type="button" data-k="event">Appointment</button><button type="button" data-k="reminder">Reminder</button></div>
+  <label>What<input id="fTitle" required maxlength="120" autocomplete="off"></label>
+  <label>Who<select id="fWho"></select></label>
+  <div class="row"><label>Date<input type="date" id="fDate"></label><label>Time<input type="time" id="fTime"></label></div>
+  <label id="lRep">Repeats<select id="fRep"><option value="none">Once</option><option value="daily">Every day</option><option value="weekly">Every week</option></select></label>
+  <label id="lCount" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><input type="checkbox" id="fCount" style="min-height:0;width:22px;height:22px"> Show a countdown on the display</label>
+  <div class="acts"><button type="button" class="btn danger" id="fDel">Delete</button><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save</button></div>
+</form></div>
+
+<div class="ov" id="ovSet"><form class="dlg" id="fSet">
+  <h3>Settings</h3>
+  <p class="msg" id="setWelcome" hidden>Welcome! Add the people in your family, then pick your bus stop.</p>
+  <label>Family name<input id="sName" maxlength="60" required></label>
+  <h2 style="margin:4px 0 0">People on the display</h2><div id="mems" style="display:grid;gap:8px"></div>
+  <button type="button" class="btn" id="addMem">+ Add person</button>
+  <h2 style="margin:8px 0 0">Bus stop (Västtrafik)</h2>
+  <div class="find"><input id="sStopQ" placeholder="Search, e.g. Brunnsparken" aria-label="Search stop"><button type="button" class="btn" id="sStopFind">Search</button></div>
+  <div class="pick" id="sStopRes"></div><p class="msg" id="sStopCur"></p>
+  <h2 style="margin:8px 0 0">Weather</h2>
+  <div class="find"><input id="sPlaceQ" placeholder="Your town, e.g. Mölndal" aria-label="Search town"><button type="button" class="btn" id="sPlaceFind">Search</button></div>
+  <div class="pick" id="sPlaceRes"></div><p class="msg" id="sPlaceCur"></p>
+  <h2 style="margin:8px 0 0">Invite family members</h2>
+  <p class="msg" style="margin:0">They create their own account, choose “Join family” and type this code:</p>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span class="code" id="sCode"></span><button type="button" class="btn" id="sNewCode">New code</button></div>
+  <p class="msg" id="setMsg" role="status"></p>
+  <div class="acts"><button type="button" class="btn danger" data-signout>Sign out</button><button type="button" class="btn" data-close>Cancel</button><button class="btn pri" id="setSave">Save</button></div>
+</form></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
+<script>
+{
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const weekKey=d=>{const t=new Date(d);t.setHours(0,0,0,0);t.setDate(t.getDate()+3-(t.getDay()+6)%7);const w1=new Date(t.getFullYear(),0,4);return t.getFullYear()+'-W'+(1+Math.round(((t-w1)/864e5-3+(w1.getDay()+6)%7)/7))};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const now=()=>new Date();
+const C=window.APP_CONFIG||{};
+if(!C.supabaseUrl||/YOUR-PROJECT/.test(C.supabaseUrl)){document.body.innerHTML='<p style="padding:24px;font-size:18px">Add your Supabase URL and key to config.js to start.</p>';throw new Error('config.js not filled in')}
+const sb=window.supabase.createClient(C.supabaseUrl,C.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+
+let user=null,hh=null,people=[],items=[],bus={list:[],err:''},wx=null,chan=null,editing=null,kind='task',signUp=false,timers=[];
+const show=id=>{for(const v of ['vAuth','vReset','vSetup','vBoard'])$('#'+v).hidden=v!==id};
+const status=t=>$('#status').textContent=t;
+const msg=(el,t,err)=>{el.textContent=t||'';el.classList.toggle('err',!!err)};
+const errText=e=>(e&&(e.message||e.error_description))||'Something went wrong';
+
+/* ---------- auth ---------- */
+function authMode(up){signUp=up;$('#authH').textContent=up?'Create account':'Sign in';$('#aGo').textContent=up?'Create account':'Sign in';
+  $('#aSwap').textContent=up?'I already have an account':'Create an account';$('#aPass').autocomplete=up?'new-password':'current-password';msg($('#aMsg'),'')}
+$('#aSwap').onclick=()=>authMode(!signUp);
+$('#fAuth').onsubmit=async e=>{e.preventDefault();const email=$('#aEmail').value.trim(),password=$('#aPass').value;$('#aGo').disabled=true;msg($('#aMsg'),'');
+  try{if(signUp){const{data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.href.split('#')[0]}});if(error)throw error;
+      if(!data.session)msg($('#aMsg'),'Check your email and tap the link to confirm your account, then sign in.')}
+    else{const{error}=await sb.auth.signInWithPassword({email,password});if(error)throw error}}
+  catch(err){msg($('#aMsg'),errText(err),true)}finally{$('#aGo').disabled=false}};
+$('#aForgot').onclick=async()=>{const email=$('#aEmail').value.trim();if(!email){msg($('#aMsg'),'Type your email first.',true);return}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href.split('#')[0]});
+  msg($('#aMsg'),error?errText(error):'If that email has an account, a reset link is on its way.',!!error)};
+$('#fReset').onsubmit=async e=>{e.preventDefault();const{error}=await sb.auth.updateUser({password:$('#rPass').value});
+  if(error)return msg($('#rMsg'),errText(error),true);start()};
+document.querySelectorAll('[data-signout]').forEach(b=>b.onclick=async()=>{$('#ovSet').classList.remove('on');await sb.auth.signOut()});
+
+/* ---------- household ---------- */
+$('#fCreate').onsubmit=async e=>{e.preventDefault();msg($('#sMsg'),'');const{data,error}=await sb.rpc('create_household',{p_name:$('#cName').value.trim()});
+  if(error)return msg($('#sMsg'),errText(error),true);await openHousehold(data.id);openSet(true)};
+$('#fJoin').onsubmit=async e=>{e.preventDefault();msg($('#sMsg'),'');const{data,error}=await sb.rpc('join_household',{p_code:$('#jCode').value.trim()});
+  if(error)return msg($('#sMsg'),/No household/.test(error.message)?'That code doesn’t match a family. Check it and try again.':errText(error),true);await openHousehold(data.id)};
+
+async function start(){const{data:{session}}=await sb.auth.getSession();user=session?.user||null;
+  if(!user){stopBoard();authMode(false);show('vAuth');return}
+  const{data,error}=await sb.from('households').select('*').order('created_at');
+  if(error){show('vSetup');msg($('#sMsg'),errText(error),true);return}
+  if(!data.length){stopBoard();show('vSetup');return}
+  let saved='';try{saved=localStorage.getItem('fhd.household')||''}catch(e){}
+  await openHousehold((data.find(h=>h.id===saved)||data[0]).id)}
+
+async function openHousehold(id){stopBoard();try{localStorage.setItem('fhd.household',id)}catch(e){}
+  const{data,error}=await sb.from('households').select('*').eq('id',id).single();if(error){show('vSetup');return msg($('#sMsg'),errText(error),true)}
+  hh=data;show('vBoard');await loadAll();subscribe();loadBus();loadWeather();
+  timers.push(setInterval(loadBus,60000),setInterval(loadWeather,15*6e4),setInterval(loadAll,5*6e4))}
+function stopBoard(){timers.forEach(clearInterval);timers=[];if(chan){sb.removeChannel(chan);chan=null}hh=null;people=[];items=[]}
+
+const norm=r=>({...r,time:r.time?String(r.time).slice(0,5):''});
+async function loadAll(){if(!hh)return;const[p,i]=await Promise.all([sb.from('people').select('*').eq('household_id',hh.id).order('sort'),sb.from('items').select('*').eq('household_id',hh.id)]);
+  if(p.error||i.error){status('Can’t reach the server right now — showing what’s loaded.');return}
+  people=p.data;items=i.data.map(norm);status('Synced · '+pad(now().getHours())+':'+pad(now().getMinutes()));render()}
+let reT=0;const refetch=()=>{clearTimeout(reT);reT=setTimeout(loadAll,300)};
+function subscribe(){const f='household_id=eq.'+hh.id;
+  chan=sb.channel('hh-'+hh.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'items',filter:f},refetch)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'items',filter:f},refetch)
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'items'},refetch)
+    .on('postgres_changes',{event:'*',schema:'public',table:'people',filter:f},refetch)
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'people'},refetch)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'households',filter:'id=eq.'+hh.id},p=>{const gid=hh.vt_gid;hh={...hh,...p.new};render();if(hh.vt_gid!==gid)loadBus();loadWeather()})
+    .subscribe(s=>{if(s==='SUBSCRIBED')refetch()})}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hh){loadAll();loadBus()}});
+
+/* ---------- items ---------- */
+const person=id=>people.find(p=>p.id===id);
+const colorOf=id=>person(id)?.color||'#8a8896';
+const nameOf=id=>person(id)?.name||'Everyone';
+const isDone=t=>t.repeat==='daily'?t.done_on===ymd(now()):t.repeat==='weekly'?t.done_on===weekKey(now()):!!t.done;
+const row=it=>({household_id:hh.id,type:it.type,title:it.title,person_id:it.person_id||null,date:it.date||null,time:it.time||null,repeat:it.repeat||'none',done:!!it.done,done_on:it.done_on||null,countdown:!!it.countdown});
+const isTmp=id=>String(id).startsWith('tmp');
+async function saveItem(it){const i=items.findIndex(x=>x.id===it.id);i<0?items.push(it):items[i]=it;render();
+  if(isTmp(it.id)){const{data,error}=await sb.from('items').insert(row(it)).select().single();
+    if(error)status('Couldn’t save: '+errText(error));else{const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=norm(data);render()}}
+  else{const{error}=await sb.from('items').update(row(it)).eq('id',it.id);if(error)status('Couldn’t save: '+errText(error))}
+  refetch()}
+async function removeItem(id){if(isTmp(id))return;items=items.filter(x=>x.id!==id);render();const{error}=await sb.from('items').delete().eq('id',id);if(error)status('Couldn’t delete: '+errText(error));refetch()}
+
+/* ---------- render ---------- */
+function tick(){const d=now(),t=pad(d.getHours())+':'+pad(d.getMinutes());document.querySelectorAll('[data-clock]').forEach(c=>c.textContent=t);
+  $('#date').innerHTML=esc(d.toLocaleDateString('en-GB',{weekday:'long'}))+'<small>'+esc(d.toLocaleDateString('en-GB',{day:'numeric',month:'long'}))+' · week '+weekKey(d).split('W')[1]+'</small>'}
+const evRow=(e,showDay)=>{const d=now(),t=ymd(d),hm=pad(d.getHours())+':'+pad(d.getMinutes());
+  const past=e.date===t&&e.time&&e.time<hm,day=showDay?new Date(e.date+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric'}):'';
+  return `<button class="ev${past?' past':''}" data-edit="${esc(e.id)}"><span class="t">${e.time?esc(e.time):'<small style="font-size:14px">All day</small>'}</span><span class="dot" style="background:${esc(colorOf(e.person_id))}"></span><span><span class="n">${esc(e.title)}</span><br><span class="s">${esc(nameOf(e.person_id))}${day?' · '+esc(day):''}</span></span></button>`};
+function render(){if(!hh)return;
+  const t=ymd(now()),evs=items.filter(i=>i.type==='event'&&i.date).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+  const td=evs.filter(e=>e.date===t);
+  $('#today').innerHTML=td.length?td.map(e=>evRow(e,false)).join(''):'<p class="empty">Nothing planned today.</p>';
+  const lim=ymd(new Date(Date.now()+14*864e5)),up=evs.filter(e=>e.date>t&&e.date<=lim).slice(0,6);
+  $('#soon').innerHTML=up.length?up.map(e=>evRow(e,true)).join(''):'<p class="empty">Nothing in the next two weeks.</p>';
+  const cd=evs.find(e=>e.countdown&&e.date>=t);
+  if(cd){const n=Math.round((new Date(cd.date+'T00:00')-new Date(t+'T00:00'))/864e5);$('#count').innerHTML=`<div class="count"><b>${n?n+(n===1?' day':' days'):'Today!'}</b>${esc(cd.title)}</div>`}else $('#count').innerHTML='';
+  const tasks=items.filter(i=>i.type==='task'),done=tasks.filter(isDone).length;
+  const groups=[...people.map(p=>({id:p.id,name:p.name,color:p.color})),{id:null,name:'Everyone',color:'#8a8896'}];
+  $('#tasks').innerHTML=tasks.length?`<div class="big"><b>${done} of ${tasks.length}</b><span>done today</span></div>`+groups.map(g=>{
+    const mine=tasks.filter(x=>g.id?x.person_id===g.id:!person(x.person_id)).sort((a,b)=>isDone(a)-isDone(b));if(!mine.length)return'';
+    const k=mine.filter(isDone).length;
+    return `<div class="who" style="--c:${esc(g.color)}"><div class="who-h"><span class="av" style="background:${esc(g.color)}">${esc(g.name[0]||'?')}</span><b>${esc(g.name)}</b><span>${k}/${mine.length}</span></div><div class="bar"><i style="width:${k/mine.length*100}%;background:${esc(g.color)}"></i></div>`+
+      mine.map(x=>`<div class="task${isDone(x)?' done':''}"><button class="chk" data-toggle="${esc(x.id)}" aria-label="Mark ${esc(x.title)} ${isDone(x)?'not done':'done'}"><i></i></button><button class="lbl" data-edit="${esc(x.id)}">${esc(x.title)}</button>${x.repeat!=='none'?`<span class="rep">${x.repeat==='daily'?'Daily':'Weekly'}</span>`:''}</div>`).join('')+'</div>'}).join('')
+    :`<p class="empty">${people.length?'No tasks yet. Tap “+ Add” to give someone a chore.':'Open Settings to add the people in your family.'}</p>`;
+  const rems=items.filter(i=>i.type==='reminder').sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
+  $('#rems').innerHTML=rems.length?rems.map(r=>`<div class="rem"><span class="av" style="background:${esc(colorOf(r.person_id))}">${esc(nameOf(r.person_id)[0])}</span><button class="lbl" data-edit="${esc(r.id)}">${esc(r.title)}<small>${r.date?esc(new Date(r.date+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}))+(r.time?' '+esc(r.time):''):esc(nameOf(r.person_id))}</small></button><button class="ok" data-toggle="${esc(r.id)}" aria-label="Dismiss reminder">✓</button></div>`).join(''):'<p class="empty">No reminders.</p>';
+  renderBus();renderWx()}
+
+function renderBus(){if(!hh)return;$('#busH').textContent='Next departures'+(hh.vt_stop?' · '+hh.vt_stop:'');
+  if(!hh.vt_gid){$('#bus').innerHTML='<p class="empty">Choose your stop in Settings.</p>';return}
+  const d=now(),rows=bus.list.filter(b=>!b.cancelled).map(b=>({...b,m:Math.round((new Date(b.time)-d)/6e4)})).filter(b=>b.m>=-1).slice(0,6);
+  $('#bus').innerHTML=(rows.length?rows.map(b=>`<div class="dep"><span class="line"${b.bg?` style="background:${esc(b.bg)};color:${esc(b.fg||'#fff')}"`:''}>${esc(b.line)}</span><span class="d">${esc(b.dest)}${b.platform?` <small>· ${esc(b.platform)}</small>`:''}</span><span class="m${b.m<=5?' soon':''}">${b.m<=0?'Now':b.m+' min'}</span></div>`).join('')
+    :`<p class="empty">${bus.err?'':'No departures in the next 90 minutes.'}</p>`)+(bus.err?`<p class="note">${esc(bus.err)}</p>`:'')}
+async function loadBus(){if(!hh?.vt_gid){renderBus();return}
+  const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'departures',gid:hh.vt_gid}});
+  if(error||data?.error)bus={list:bus.list,err:'Live times unavailable right now.'};else bus={list:data.departures||[],err:''};renderBus()}
+
+function renderWx(){if(!hh)return;if(!hh.lat||!wx){$('#wx').innerHTML=hh.lat?'':'<span>Set your town in Settings<br>to see the weather</span>';return}
+  const c=wx.code,w=c===0?'Clear':c<=2?'Partly cloudy':c===3?'Cloudy':c<=48?'Fog':c<=57?'Drizzle':c<=67?'Rain':c<=77?'Snow':c<=82?'Showers':c<=86?'Snow showers':'Thunder';
+  $('#wx').innerHTML=`<b>${Math.round(wx.t)}°</b><span>${esc(w)} · ${esc(hh.place||'')}<br>${Math.round(wx.hi)}° / ${Math.round(wx.lo)}°</span>`}
+async function loadWeather(){if(!hh?.lat){wx=null;renderWx();return}
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${hh.lat}&longitude=${hh.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`);
+    if(!r.ok)throw 0;const j=await r.json();wx={t:j.current.temperature_2m,code:j.current.weather_code,hi:j.daily.temperature_2m_max[0],lo:j.daily.temperature_2m_min[0]}}catch(e){}renderWx()}
+
+/* ---------- add / edit ---------- */
+function setKind(k){kind=k;document.querySelectorAll('#kind button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));
+  $('#lRep').style.display=k==='task'?'':'none';$('#lCount').style.display=k==='event'?'flex':'none'}
+function openAdd(it){editing=it||null;$('#addH').textContent=it?'Edit':'Add';
+  $('#fWho').innerHTML='<option value="">Everyone</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  setKind(it?.type||kind);$('#fTitle').value=it?.title||'';$('#fWho').value=it?.person_id||'';$('#fDate').value=it?it.date||'':ymd(now());$('#fTime').value=it?.time||'';
+  $('#fRep').value=it?.repeat||'none';$('#fCount').checked=!!it?.countdown;$('#fDel').style.display=it?'':'none';$('#ovAdd').classList.add('on');$('#fTitle').focus()}
+$('#addBtn').onclick=()=>openAdd();
+$('#kind').onclick=e=>{const b=e.target.closest('button');if(b)setKind(b.dataset.k)};
+$('#fAdd').onsubmit=e=>{e.preventDefault();const title=$('#fTitle').value.trim();if(!title)return;
+  const it={...(editing||{id:'tmp'+Date.now(),done:false,done_on:null}),type:kind,title,person_id:$('#fWho').value||null,date:$('#fDate').value,time:$('#fTime').value,repeat:kind==='task'?$('#fRep').value:'none',countdown:kind==='event'&&$('#fCount').checked};
+  if(editing&&editing.type==='task'&&(editing.repeat!==it.repeat||kind!=='task')){it.done=false;it.done_on=null}
+  $('#ovAdd').classList.remove('on');saveItem(it)};
+$('#fDel').onclick=()=>{if(editing)removeItem(editing.id);$('#ovAdd').classList.remove('on')};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.ov').classList.remove('on'));
+document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('on')});
+$('#vBoard').addEventListener('click',e=>{const tg=e.target.closest('[data-toggle]'),ed=e.target.closest('[data-edit]');
+  if((tg||ed)&&isTmp((tg||ed).dataset.toggle||(tg||ed).dataset.edit))return;
+  if(tg){const it=items.find(i=>i.id===tg.dataset.toggle);if(!it)return;if(it.type==='reminder')return removeItem(it.id);
+    const d=isDone(it),k=it.repeat==='daily'?ymd(now()):it.repeat==='weekly'?weekKey(now()):'';
+    saveItem(it.repeat!=='none'?{...it,done_on:d?null:k}:{...it,done:!d})}
+  else if(ed){const it=items.find(i=>i.id===ed.dataset.edit);if(it)openAdd(it)}});
+
+/* ---------- settings ---------- */
+let draft=null;
+function drawMems(){$('#mems').innerHTML=draft.people.length?draft.people.map((m,i)=>`<div class="mem"><input value="${esc(m.name)}" data-mi="${i}" aria-label="Name" maxlength="40" placeholder="Name"><input type="color" value="${esc(m.color)}" data-mc="${i}" aria-label="Colour"><button type="button" class="btn" data-mr="${i}" aria-label="Remove ${esc(m.name)}">×</button></div>`).join(''):'<p class="msg">No one added yet.</p>'}
+const PAL=['#e4572e','#2e86de','#9b59b6','#16a085','#f39c12','#d63384','#6c757d','#20c997'];
+function openSet(welcome){draft={people:people.map(p=>({...p})),gid:hh.vt_gid,stop:hh.vt_stop,place:hh.place,lat:hh.lat,lon:hh.lon};
+  if(welcome&&!draft.people.length)draft.people.push({name:'',color:PAL[0]});
+  $('#setWelcome').hidden=!welcome;$('#sName').value=hh.name;drawMems();$('#sStopQ').value='';$('#sStopRes').innerHTML='';$('#sPlaceQ').value='';$('#sPlaceRes').innerHTML='';
+  $('#sStopCur').textContent=draft.stop?'Current stop: '+draft.stop:'No stop chosen yet.';$('#sPlaceCur').textContent=draft.place?'Current town: '+draft.place:'No town chosen yet.';
+  $('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
+$('#setBtn').onclick=()=>openSet(false);
+$('#mems').oninput=e=>{const t=e.target;if(t.dataset.mi!=null)draft.people[t.dataset.mi].name=t.value;if(t.dataset.mc!=null)draft.people[t.dataset.mc].color=t.value};
+$('#mems').onclick=e=>{const i=e.target.closest('[data-mr]')?.dataset.mr;if(i!=null){draft.people.splice(+i,1);drawMems()}};
+$('#addMem').onclick=()=>{draft.people.push({name:'',color:PAL[draft.people.length%PAL.length]});drawMems()};
+async function findStop(){const q=$('#sStopQ').value.trim();if(q.length<2)return;$('#sStopRes').innerHTML='<p class="msg">Searching…</p>';
+  const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'search',q}});
+  if(error||data?.error){$('#sStopRes').innerHTML='<p class="msg err">Stop search isn’t working right now.</p>';return}
+  $('#sStopRes').innerHTML=data.results.length?data.results.map(r=>`<button type="button" class="btn" data-gid="${esc(r.gid)}" data-name="${esc(r.name)}">${esc(r.name)}</button>`).join(''):'<p class="msg">No stops found.</p>'}
+$('#sStopFind').onclick=findStop;$('#sStopQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();findStop()}};
+$('#sStopRes').onclick=e=>{const b=e.target.closest('[data-gid]');if(!b)return;draft.gid=b.dataset.gid;draft.stop=b.dataset.name;$('#sStopRes').innerHTML='';$('#sStopCur').textContent='Chosen: '+draft.stop+' — tap Save.'};
+async function findPlace(){const q=$('#sPlaceQ').value.trim();if(q.length<2)return;$('#sPlaceRes').innerHTML='<p class="msg">Searching…</p>';
+  try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=sv`);const j=await r.json();const res=j.results||[];
+    $('#sPlaceRes').innerHTML=res.length?res.map(p=>`<button type="button" class="btn" data-lat="${p.latitude}" data-lon="${p.longitude}" data-name="${esc(p.name)}">${esc(p.name)}<span class="msg"> · ${esc([p.admin1,p.country].filter(Boolean).join(', '))}</span></button>`).join(''):'<p class="msg">No places found.</p>'}
+  catch(e){$('#sPlaceRes').innerHTML='<p class="msg err">Town search isn’t working right now.</p>'}}
+$('#sPlaceFind').onclick=findPlace;$('#sPlaceQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();findPlace()}};
+$('#sPlaceRes').onclick=e=>{const b=e.target.closest('[data-lat]');if(!b)return;draft.lat=+b.dataset.lat;draft.lon=+b.dataset.lon;draft.place=b.dataset.name;$('#sPlaceRes').innerHTML='';$('#sPlaceCur').textContent='Chosen: '+draft.place+' — tap Save.'};
+$('#sNewCode').onclick=async()=>{const{data,error}=await sb.rpc('new_join_code',{h:hh.id});if(error)return msg($('#setMsg'),/owner/.test(error.message)?'Only the person who created the family can change the code.':errText(error),true);hh.join_code=data;$('#sCode').textContent=data};
+$('#fSet').onsubmit=async e=>{e.preventDefault();$('#setSave').disabled=true;msg($('#setMsg'),'Saving…');
+  try{const h=await sb.from('households').update({name:$('#sName').value.trim()||hh.name,vt_gid:draft.gid||null,vt_stop:draft.stop||null,place:draft.place||null,lat:draft.lat??null,lon:draft.lon??null}).eq('id',hh.id).select().single();
+    if(h.error)throw h.error;const gidChanged=h.data.vt_gid!==hh.vt_gid;hh=h.data;
+    const keep=draft.people.filter(p=>p.name.trim()),keepIds=new Set(keep.filter(p=>p.id).map(p=>p.id));
+    const gone=people.filter(p=>!keepIds.has(p.id)).map(p=>p.id);
+    if(gone.length){const r=await sb.from('people').delete().in('id',gone);if(r.error)throw r.error}
+    for(const[i,p]of keep.entries()){const body={household_id:hh.id,name:p.name.trim(),color:p.color,sort:i};
+      const r=p.id?await sb.from('people').update(body).eq('id',p.id):await sb.from('people').insert(body);if(r.error)throw r.error}
+    $('#ovSet').classList.remove('on');await loadAll();if(gidChanged){bus={list:[],err:''};loadBus()}loadWeather()}
+  catch(err){msg($('#setMsg'),'Couldn’t save: '+errText(err),true)}finally{$('#setSave').disabled=false}};
+
+/* ---------- keep a wall tablet awake ---------- */
+let lock=null;const wake=async()=>{try{if('wakeLock' in navigator&&!lock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>lock=null)}}catch(e){}};
+document.addEventListener('click',wake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)wake()});
+
+/* ---------- go ---------- */
+tick();setInterval(()=>{tick();renderBus()},15000);
+let lastDay=ymd(now());setInterval(()=>{if(ymd(now())!==lastDay){lastDay=ymd(now());render()}},6e4);
+let started=false;
+sb.auth.onAuthStateChange((ev,session)=>{
+  if(ev==='PASSWORD_RECOVERY'){show('vReset');return}
+  const uid=session?.user?.id||null;
+  if(ev==='SIGNED_OUT'||(ev==='SIGNED_IN'&&uid!==user?.id)||!started){started=true;setTimeout(start,0)}});
+}
+</script></body></html>

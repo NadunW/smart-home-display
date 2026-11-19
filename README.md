@@ -19,6 +19,7 @@ supabase/
 - **Privacy**: row-level security means a signed-in user only ever sees rows for families they belong to.
 - **Bus times**: the app calls the `vasttrafik` server function, which logs in to Västtrafik with *your* key, looks up departures and caches them for 20 seconds. The key never reaches the browser, and only signed-in users can call it.
 - **Weather**: Open-Meteo, free, no key.
+- **Reward notes**: kids earn notes for things on their chart (chores, habits, learning) and spend them on rewards. Tap a child's balance on the display to earn or spend; each child can star one reward to save up for, and it shows as a progress bar. *Edit chart* changes what's on it; *History* shows recent notes, lets you undo one, and give a bonus or take notes away. Each thing to earn can be limited to once a day or once a week; the server checks the limit and that there are enough notes before anything is spent.
 
 ## Setup (about 20 minutes)
 

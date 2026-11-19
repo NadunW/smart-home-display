@@ -64,11 +64,34 @@ input,select{font-size:16px;padding:10px 12px;border-radius:12px;border:1px soli
 .msg{font-size:14px;margin:0;color:var(--mute)}.msg.err{color:var(--acc)}
 .status{color:var(--mute);font-size:13px;padding:0 max(2.5vw,16px) 20px}
 hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
-@media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.tasks{grid-column:1/-1;order:-1}}
+.rwp+.rwp{border-top:1px solid var(--line);margin-top:8px;padding-top:4px}
+.rwk{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;padding:6px 0;border-radius:0}
+.rwk b{font-size:18px;font-weight:600}.rwk small{display:block;color:var(--mute);font-size:14px}
+.bal{font-size:34px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}.bal small{font-size:15px;color:var(--mute);font-weight:400}
+.goal{font-size:14px;color:var(--mute);display:flex;justify-content:space-between;gap:8px;margin:2px 0 4px}
+.dlg.wide{width:min(1100px,100%);max-height:94vh;display:flex;flex-direction:column;overflow:hidden}#rwBody{overflow:auto;flex:1;margin:0 -6px;padding:0 6px 6px}
+.rwk .bal small{display:inline}
+.rwtop{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}.rwtop .bal{margin-left:auto;font-size:40px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tw{position:relative}
+.tile{width:100%;height:100%;min-height:132px;background:var(--card);border-radius:18px;padding:12px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:15px;font-weight:500;line-height:1.25}
+.tile .ic{font-size:38px;line-height:1.1}
+.tile .pr{margin-top:auto;font-weight:700;font-size:15px;background:var(--c,var(--acc));color:#fff;border-radius:999px;padding:2px 12px;white-space:nowrap}
+.tile.done{opacity:.45}.tile.done .pr,.tile.cant .pr{background:var(--mute)}
+.tile.edit{outline:2px dashed var(--mute);outline-offset:-2px}
+.star{position:absolute;top:2px;right:2px;width:44px;font-size:22px;color:var(--mute)}.star.on{color:#f5b301}
+.cat{font-size:15px;font-weight:600;color:var(--mute);margin:12px 0 6px}
+.hist{display:grid;grid-template-columns:36px minmax(0,1fr) auto 44px;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.hist .n{font-weight:600;font-size:18px;font-variant-numeric:tabular-nums}.hist .n.minus{color:var(--acc)}
+.confirm{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);border-radius:16px;padding:8px 8px 8px 16px;font-size:18px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:16px;padding:4px 6px 4px 18px;display:flex;gap:8px;align-items:center;font-size:18px;font-weight:500;z-index:15;box-shadow:0 6px 24px rgb(0 0 0/.25);width:max-content;max-width:calc(100% - 32px)}
+.toast span{padding:10px 0}.toast button{color:inherit;text-decoration:underline;padding:0 12px}
+@keyframes pop{50%{transform:scale(1.25)}}.pop{animation:pop .5s}
+@media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.mid{grid-column:1/-1;order:-1}}
 @media(max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}.wx{margin-left:0}header{gap:12px 20px}.clock{font-size:64px}.tools{width:100%}.tools .pri{flex:1}}
 body,.card,.dlg{transition:background-color .8s,color .8s}
 body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;pointer-events:none;z-index:20}
-@media(prefers-reduced-motion:reduce){.bar i,body,.card,.dlg{transition:none}}
+@media(prefers-reduced-motion:reduce){.bar i,body,.card,.dlg{transition:none}.pop{animation:none}}
 </style></head><body>
 
 <!-- Sign in -->
@@ -113,7 +136,8 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
 <main class="grid">
   <div class="col"><section class="card"><h2>Today</h2><div id="today"></div></section>
     <section class="card"><h2>Coming up</h2><div id="soon"></div></section></div>
-  <section class="card tasks"><h2>Family tasks</h2><div id="tasks"></div></section>
+  <div class="col mid"><section class="card"><h2>Family tasks</h2><div id="tasks"></div></section>
+    <section class="card" id="rwCard" hidden><h2>Reward notes</h2><div id="rw"></div></section></div>
   <div class="col"><section class="card"><h2 id="busH">Next departures</h2><div id="bus"></div></section>
     <section class="card"><h2>Reminders</h2><div id="rems"></div></section></div>
 </main>
@@ -130,6 +154,25 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
   <label id="lCount" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><input type="checkbox" id="fCount" style="min-height:0;width:22px;height:22px"> Show a countdown on the display</label>
   <div class="acts"><button type="button" class="btn danger" id="fDel">Delete</button><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save</button></div>
 </form></div>
+
+<div class="ov" id="ovRw"><div class="dlg wide" role="dialog" aria-label="Reward notes">
+  <div class="rwtop"><div class="seg" id="rwWho"></div><div class="bal" id="rwBal"></div><button type="button" class="btn" data-close>Close</button></div>
+  <div class="rwtop"><div class="seg" id="rwTab"><button type="button" data-t="earn">Earn notes</button><button type="button" data-t="spend">Spend notes</button><button type="button" data-t="hist">History</button></div><button type="button" class="btn" id="rwEdit" style="margin-left:auto">Edit chart</button></div>
+  <div class="confirm" id="rwConfirm" hidden></div>
+  <div id="rwBody"></div>
+</div></div>
+
+<div class="ov" id="ovRi"><form class="dlg" id="fRi">
+  <h3 id="riH">Add</h3>
+  <div class="seg" id="riKind"><button type="button" data-k="earn">Earn notes</button><button type="button" data-k="spend">Reward</button></div>
+  <div class="row" style="grid-template-columns:84px minmax(0,1fr)"><label>Icon<input id="riIcon" maxlength="8" placeholder="⭐" autocomplete="off"></label><label>What<input id="riTitle" required maxlength="80" autocomplete="off"></label></div>
+  <div class="row"><label id="riNotesL">Notes<input type="number" id="riNotes" min="1" max="1000" required inputmode="numeric"></label><label>Group<input id="riCat" maxlength="40" list="riCats" autocomplete="off" placeholder="e.g. Chores"></label></div>
+  <datalist id="riCats"></datalist>
+  <div class="row"><label id="riPerL">How often<select id="riPer"><option value="day">Once a day</option><option value="week">Once a week</option><option value="any">Any time</option></select></label><label>Who<select id="riWho"></select></label></div>
+  <p class="msg" id="riMsg" role="status"></p>
+  <div class="acts"><button type="button" class="btn danger" id="riDel">Delete</button><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save</button></div>
+</form></div>
+<div class="toast" id="toast" role="status" hidden></div>
 
 <div class="ov" id="ovSet"><form class="dlg" id="fSet">
   <h3>Settings</h3>
@@ -217,10 +260,10 @@ async function openHousehold(id){stopBoard();try{localStorage.setItem('fhd.house
   const{data,error}=await sb.from('households').select('*').eq('id',id).single();if(error){show('vSetup');return msg($('#sMsg'),errText(error),true)}
   hh=data;show('vBoard');await loadAll();subscribe();loadBus();loadWeather();
   timers.push(setInterval(loadBus,60000),setInterval(loadWeather,15*6e4),setInterval(loadAll,5*6e4))}
-function stopBoard(){timers.forEach(clearInterval);timers=[];if(chan){sb.removeChannel(chan);chan=null}hh=null;people=[];items=[]}
+function stopBoard(){timers.forEach(clearInterval);timers=[];if(chan){sb.removeChannel(chan);chan=null}hh=null;people=[];items=[];rItems=[];rLog=[];rBal={};rOff=false;$('#ovRw').classList.remove('on')}
 
 const norm=r=>({...r,time:r.time?String(r.time).slice(0,5):''});
-async function loadAll(){if(!hh)return;const[p,i]=await Promise.all([sb.from('people').select('*').eq('household_id',hh.id).order('sort'),sb.from('items').select('*').eq('household_id',hh.id)]);
+async function loadAll(){if(!hh)return;const[p,i]=await Promise.all([sb.from('people').select('*').eq('household_id',hh.id).order('sort'),sb.from('items').select('*').eq('household_id',hh.id),loadRewards()]);
   if(p.error||i.error){status('Can’t reach the server right now — showing what’s loaded.');return}
   people=p.data;items=i.data.map(norm);applyScreen();status('Synced · '+pad(now().getHours())+':'+pad(now().getMinutes()));render()}
 let reT=0;const refetch=()=>{clearTimeout(reT);reT=setTimeout(loadAll,300)};
@@ -231,6 +274,10 @@ function subscribe(){const f='household_id=eq.'+hh.id;
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'items'},refetch)
     .on('postgres_changes',{event:'*',schema:'public',table:'people',filter:f},refetch)
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'people'},refetch)
+    .on('postgres_changes',{event:'*',schema:'public',table:'reward_items',filter:f},refetch)
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'reward_items'},refetch)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'reward_log',filter:f},refetch)
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'reward_log'},refetch)
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'households',filter:'id=eq.'+hh.id},p=>{const gid=hh.vt_gid;hh={...hh,...p.new};render();if(hh.vt_gid!==gid)loadBus();loadWeather()})
     .subscribe(s=>{if(s==='SUBSCRIBED')refetch()})}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hh){loadAll();loadBus()}});
@@ -273,7 +320,7 @@ function render(){if(!hh)return;
     :`<p class="empty">${people.length?'No tasks yet. Tap “+ Add” to give someone a chore.':'Open Settings to add the people in your family.'}</p>`;
   const rems=items.filter(i=>i.type==='reminder').sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
   $('#rems').innerHTML=rems.length?rems.map(r=>`<div class="rem"><span class="av" style="background:${esc(colorOf(r.person_id))}">${esc(nameOf(r.person_id)[0])}</span><button class="lbl" data-edit="${esc(r.id)}">${esc(r.title)}<small>${r.date?esc(new Date(r.date+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}))+(r.time?' '+esc(r.time):''):esc(nameOf(r.person_id))}</small></button><button class="ok" data-toggle="${esc(r.id)}" aria-label="Dismiss reminder">✓</button></div>`).join(''):'<p class="empty">No reminders.</p>';
-  renderBus();renderWx()}
+  renderRewards();if($('#ovRw').classList.contains('on'))drawRw();renderBus();renderWx()}
 
 function renderBus(){if(!hh)return;$('#busH').textContent='Next departures'+(hh.vt_stop?' · '+hh.vt_stop:'');
   if(!hh.vt_gid){$('#bus').innerHTML='<p class="empty">Choose your stop in Settings.</p>';return}
@@ -314,6 +361,113 @@ $('#vBoard').addEventListener('click',e=>{const tg=e.target.closest('[data-toggl
     const d=isDone(it),k=it.repeat==='daily'?ymd(now()):it.repeat==='weekly'?weekKey(now()):'';
     saveItem(it.repeat!=='none'?{...it,done_on:d?null:k}:{...it,done:!d})}
   else if(ed){const it=items.find(i=>i.id===ed.dataset.edit);if(it)openAdd(it)}});
+
+/* ---------- reward notes ---------- */
+// Kids earn notes for things on their chart and spend them on rewards. Earning and spending go
+// through database functions that check the once-a-day/week limits and the balance.
+let rItems=[],rLog=[],rBal={},rOff=false,rw={pid:null,tab:'earn',edit:false,confirm:null},riEditing=null,riKind='earn',rwBusy=false,rwSeen=0;
+async function loadRewards(){if(!hh)return;const since=ymd(new Date(Date.now()-40*864e5));
+  const[a,b,c]=await Promise.all([sb.from('reward_items').select('*').eq('household_id',hh.id).order('sort').order('created_at'),
+    sb.from('reward_balances').select('*').eq('household_id',hh.id),
+    sb.from('reward_log').select('*').eq('household_id',hh.id).gte('day',since).order('created_at',{ascending:false}).limit(1000)]);
+  const e=a.error||b.error||c.error;if(e){if(/^(PGRST20|42P01)/.test(e.code||''))rOff=true;return}
+  rOff=false;rItems=a.data;rLog=c.data;rBal=Object.fromEntries(b.data.map(x=>[x.person_id,x.balance]))}
+const today=()=>ymd(now());
+const bal=pid=>rBal[pid]||0;
+const forPid=(it,pid)=>!it.person_id||it.person_id===pid;
+const doneFor=(it,pid)=>it.per!=='any'&&rLog.some(l=>l.item_id===it.id&&l.person_id===pid&&(it.per==='day'?l.day===today():weekKey(new Date(l.day+'T12:00'))===weekKey(now())));
+// On the chart: people with their own list or any notes; if the list is only "everyone" items, everyone.
+function rwPeople(){const own=people.filter(p=>rItems.some(i=>i.person_id===p.id)||p.id in rBal||rLog.some(l=>l.person_id===p.id));return own.length?own:rItems.length?people:[]}
+const goalOf=p=>{const g=p?.goal_item&&rItems.find(i=>i.id===p.goal_item);return g&&g.kind==='spend'?g:null};
+const dayLabel=d=>d===today()?'Today':d===ymd(new Date(Date.now()-864e5))?'Yesterday':new Date(d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+function renderRewards(){$('#rwCard').hidden=rOff;if(rOff)return;const kids=rwPeople();
+  if(!kids.length){$('#rw').innerHTML=people.length?`<p class="empty" style="margin-bottom:10px">Kids earn notes for chores and good habits, then spend them on rewards.</p><div class="find"><select id="rwSeedWho" aria-label="Who the chart is for">${people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select><button type="button" class="btn pri" id="rwSeed">Start with the example chart</button></div><button type="button" class="btn" id="rwOwn" style="margin-top:8px">Or build your own</button>`:'<p class="empty">Open Settings to add the people in your family.</p>';return}
+  $('#rw').innerHTML=kids.map(p=>{const b=bal(p.id),t=rLog.filter(l=>l.person_id===p.id&&l.day===today()&&l.notes>0).reduce((s,l)=>s+l.notes,0),g=goalOf(p);
+    return `<div class="rwp"><button class="rwk" data-rw="${esc(p.id)}"><span class="av" style="background:${esc(p.color)}">${esc(p.name[0]||'?')}</span><span><b>${esc(p.name)}</b><small>${t?'+'+t+' today · ':''}Tap to earn or spend</small></span><span class="bal">${b}<small> notes</small></span></button>`+
+      (g?`<div class="goal"><span>${esc(g.icon||'★')} Saving for ${esc(g.title)}</span><span>${b>=g.notes?'Ready!':Math.max(b,0)+' / '+g.notes}</span></div><div class="bar"><i style="width:${Math.min(100,Math.max(0,b)/g.notes*100)}%;background:${esc(p.color)}"></i></div>`:'')+'</div>'}).join('')}
+function openRw(pid,tab){const list=rwPeople().length?rwPeople():people;rw.pid=pid||rw.pid;if(!list.some(k=>k.id===rw.pid))rw.pid=list[0]?.id||null;if(!rw.pid)return;
+  rw.tab=tab||'earn';rw.edit=false;rw.confirm=null;rwSeen=Date.now();$('#ovRw').classList.add('on');drawRw()}
+function drawRw(){const list=rwPeople().length?rwPeople():people,p=person(rw.pid);if(!p){$('#ovRw').classList.remove('on');return}
+  $('#rwWho').innerHTML=list.length>1?list.map(k=>`<button type="button" data-p="${esc(k.id)}" aria-pressed="${k.id===rw.pid}">${esc(k.name)}</button>`).join(''):`<b style="font-size:24px">${esc(p.name)}</b>`;
+  $('#rwBal').innerHTML=`${bal(p.id)}<small> notes</small>`;
+  $('#rwTab').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===rw.tab));
+  $('#rwEdit').hidden=rw.tab==='hist';$('#rwEdit').textContent=rw.edit?'Done editing':'Edit chart';$('#rwEdit').setAttribute('aria-pressed',rw.edit);
+  const cf=rw.confirm&&rItems.find(i=>i.id===rw.confirm);$('#rwConfirm').hidden=!cf;
+  if(cf)$('#rwConfirm').innerHTML=`<span style="flex:1">Spend <b>${cf.notes} notes</b> on ${esc(cf.icon||'')} ${esc(cf.title)}?</span><button type="button" class="btn" data-cf="no">Not now</button><button type="button" class="btn pri" data-cf="yes">Yes, spend</button>`;
+  if(rw.tab==='hist'){const h=rLog.filter(l=>l.person_id===p.id).slice(0,40);
+    $('#rwBody').innerHTML=`<div class="find" style="grid-template-columns:minmax(0,1fr) 84px auto auto;margin-bottom:8px"><input id="adjT" placeholder="Bonus or take away, e.g. Helped grandma" maxlength="80" aria-label="Reason"><input type="number" id="adjN" min="1" max="1000" value="1" aria-label="Notes" inputmode="numeric"><button type="button" class="btn" data-adj="1">+ Give</button><button type="button" class="btn" data-adj="-1">− Take</button></div>`+
+      (h.length?h.map(l=>`<div class="hist"><span style="font-size:24px;text-align:center">${esc(l.icon||(l.notes>0?'⭐':'🎁'))}</span><span>${esc(l.title)}<br><small class="msg">${esc(dayLabel(l.day))}</small></span><span class="n${l.notes<0?' minus':''}">${l.notes>0?'+':''}${l.notes}</span><button type="button" class="ok" data-undo="${esc(l.id)}" aria-label="Undo ${esc(l.title)}">×</button></div>`).join(''):'<p class="empty">Nothing in the last few weeks.</p>');return}
+  const mine=rItems.filter(i=>i.kind===rw.tab&&forPid(i,p.id)),cats=[...new Set(mine.map(i=>i.category||''))],b=bal(p.id);
+  const tile=i=>{const done=rw.tab==='earn'&&doneFor(i,p.id),cant=rw.tab==='spend'&&b<i.notes,goal=p.goal_item===i.id;
+    const pr=rw.tab==='earn'?(done?'✓ '+(i.per==='week'?'This week':'Today'):'+'+i.notes):(cant&&!rw.edit?'Need '+(i.notes-Math.max(b,0))+' more':i.notes+' notes');
+    return `<div class="tw"><button type="button" class="tile${done?' done':''}${cant?' cant':''}${rw.edit?' edit':''}" data-ri="${esc(i.id)}" style="--c:${esc(p.color)}"><span class="ic">${esc(i.icon||(i.kind==='earn'?'⭐':'🎁'))}</span><span>${esc(i.title)}</span><span class="pr">${pr}</span></button>`+
+      (rw.tab==='spend'&&!rw.edit?`<button type="button" class="star${goal?' on':''}" data-goal="${esc(i.id)}" aria-label="${goal?'Stop saving for':'Save up for'} ${esc(i.title)}" aria-pressed="${goal}">${goal?'★':'☆'}</button>`:'')+'</div>'};
+  $('#rwBody').innerHTML=(mine.length?cats.map(c=>(c?`<h4 class="cat">${esc(c)}</h4>`:'')+`<div class="tiles">${mine.filter(i=>(i.category||'')===c).map(tile).join('')}</div>`).join('')
+      :`<p class="empty">${rw.tab==='earn'?'Nothing to earn yet.':'No rewards yet.'} Tap “Edit chart” to add some.</p>`)+
+    (rw.tab==='spend'&&mine.length&&!rw.edit?'<p class="note">Tap ☆ to save up for a reward. It shows on the display.</p>':'')+
+    (rw.edit?`<div class="tiles" style="margin-top:12px"><button type="button" class="tile" id="riNew"><span class="ic">＋</span><span>${rw.tab==='earn'?'Add a way to earn':'Add a reward'}</span></button></div>`:'')}
+$('#rw').onclick=e=>{const k=e.target.closest('[data-rw]');if(k)return openRw(k.dataset.rw);
+  const sd=e.target.closest('#rwSeed');if(sd){sd.disabled=true;return seed($('#rwSeedWho').value)}
+  if(e.target.closest('#rwOwn')){openRw($('#rwSeedWho')?.value);rw.edit=true;drawRw()}};
+$('#ovRw').addEventListener('pointerdown',()=>rwSeen=Date.now());
+$('#rwWho').onclick=e=>{const b=e.target.closest('[data-p]');if(b){rw.pid=b.dataset.p;rw.confirm=null;drawRw()}};
+$('#rwTab').onclick=e=>{const b=e.target.closest('[data-t]');if(b){rw.tab=b.dataset.t;rw.confirm=null;drawRw()}};
+$('#rwEdit').onclick=()=>{rw.edit=!rw.edit;rw.confirm=null;drawRw()};
+$('#rwConfirm').onclick=e=>{const b=e.target.closest('[data-cf]');if(!b)return;const id=rw.confirm;rw.confirm=null;drawRw();if(b.dataset.cf==='yes')rwAct('spend',id)};
+$('#rwBody').onclick=e=>{if(e.target.closest('#riNew'))return openRi(null);
+  const g=e.target.closest('[data-goal]'),u=e.target.closest('[data-undo]'),a=e.target.closest('[data-adj]'),t=e.target.closest('[data-ri]');
+  if(g)return setGoal(g.dataset.goal);if(u)return undo(u.dataset.undo);if(a)return adjust(+a.dataset.adj);if(!t)return;
+  const it=rItems.find(i=>i.id===t.dataset.ri);if(!it)return;if(rw.edit)return openRi(it);
+  if(it.kind==='earn'){if(doneFor(it,rw.pid))return toast(`Already done ${it.per==='week'?'this week':'today'}. Well done!`);rwAct('earn',it.id)}
+  else{const b=bal(rw.pid);if(b<it.notes)return toast(`${it.notes-Math.max(b,0)} more notes to go. Keep going!`);rw.confirm=it.id;drawRw()}};
+async function rwAct(k,id){if(rwBusy)return;rwBusy=true;const pid=rw.pid,p=person(pid);
+  const{data,error}=await sb.rpc(k==='earn'?'reward_earn':'reward_spend',{p_item:id,p_person:pid,p_day:today()});rwBusy=false;
+  if(error)return toast(errText(error));
+  rLog.unshift(data);rBal[pid]=bal(pid)+data.notes;render();
+  const el=$('#rwBal');el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+  toast(k==='earn'?`+${data.notes} notes for ${p?.name||''} 🎉`:`Enjoy! ${data.icon||''} ${data.title}`,data.id);refetch()}
+async function undo(id){const l=rLog.find(x=>x.id===id);if(!l)return;hideToast();rLog=rLog.filter(x=>x.id!==id);rBal[l.person_id]=bal(l.person_id)-l.notes;render();
+  const{error}=await sb.from('reward_log').delete().eq('id',id);if(error)toast('Couldn’t undo: '+errText(error));refetch()}
+async function adjust(sign){const n=Math.abs(parseInt($('#adjN').value,10)||0);if(!n||!rw.pid)return;const title=$('#adjT').value.trim()||(sign>0?'Bonus':'Taken away');
+  const{data,error}=await sb.from('reward_log').insert({household_id:hh.id,person_id:rw.pid,title,icon:sign>0?'🌟':'➖',notes:sign*n,day:today()}).select().single();
+  if(error)return toast('Couldn’t save: '+errText(error));rLog.unshift(data);rBal[rw.pid]=bal(rw.pid)+data.notes;render();refetch()}
+async function setGoal(id){const p=person(rw.pid);if(!p)return;const v=p.goal_item===id?null:id;p.goal_item=v;render();
+  const{error}=await sb.from('people').update({goal_item:v}).eq('id',p.id);if(error)toast('Couldn’t save: '+errText(error));refetch()}
+let toT=0;function toast(t,undoId){const el=$('#toast');el.innerHTML=`<span>${esc(t)}</span>`+(undoId?`<button type="button" data-undo="${esc(undoId)}">Undo</button>`:'');el.hidden=false;clearTimeout(toT);toT=setTimeout(hideToast,undoId?8000:3500)}
+function hideToast(){$('#toast').hidden=true}
+$('#toast').onclick=e=>{const u=e.target.closest('[data-undo]');if(u)undo(u.dataset.undo)};
+// Close the reward screen on the wall after 3 minutes without a tap.
+setInterval(()=>{if($('#ovRw').classList.contains('on')&&!$('#ovRi').classList.contains('on')&&Date.now()-rwSeen>18e4)$('#ovRw').classList.remove('on')},15000);
+
+function setRiKind(k){riKind=k;$('#riKind').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));
+  $('#riPerL').style.visibility=k==='earn'?'':'hidden';$('#riNotesL').firstChild.textContent=k==='earn'?'Notes earned':'Costs (notes)'}
+function openRi(it){riEditing=it;$('#riH').textContent=it?'Edit':rw.tab==='spend'?'Add a reward':'Add a way to earn';setRiKind(it?.kind||(rw.tab==='spend'?'spend':'earn'));
+  $('#riIcon').value=it?.icon||'';$('#riTitle').value=it?.title||'';$('#riNotes').value=it?.notes||'';$('#riCat').value=it?.category||'';$('#riPer').value=it?.per||'day';
+  $('#riWho').innerHTML='<option value="">Everyone on the chart</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');$('#riWho').value=it?it.person_id||'':rw.pid||'';
+  $('#riCats').innerHTML=[...new Set(rItems.map(i=>i.category).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('');
+  $('#riDel').style.display=it?'':'none';msg($('#riMsg'),'');$('#ovRi').classList.add('on');$('#riTitle').focus()}
+$('#riKind').onclick=e=>{const b=e.target.closest('[data-k]');if(b)setRiKind(b.dataset.k)};
+$('#fRi').onsubmit=async e=>{e.preventDefault();const body={household_id:hh.id,kind:riKind,icon:$('#riIcon').value.trim()||null,title:$('#riTitle').value.trim(),notes:parseInt($('#riNotes').value,10),
+    category:$('#riCat').value.trim()||null,per:riKind==='earn'?$('#riPer').value:'any',person_id:$('#riWho').value||null};
+  if(!body.title||!(body.notes>0))return;if(!riEditing)body.sort=rItems.reduce((m,i)=>Math.max(m,i.sort),0)+1;
+  const r=riEditing?await sb.from('reward_items').update(body).eq('id',riEditing.id):await sb.from('reward_items').insert(body);
+  if(r.error)return msg($('#riMsg'),'Couldn’t save: '+errText(r.error),true);$('#ovRi').classList.remove('on');await loadAll()};
+$('#riDel').onclick=async()=>{if(!riEditing)return;const r=await sb.from('reward_items').delete().eq('id',riEditing.id);
+  if(r.error)return msg($('#riMsg'),'Couldn’t delete: '+errText(r.error),true);$('#ovRi').classList.remove('on');await loadAll()};
+
+// Example chart (Mirali's posters). Everything can be edited afterwards with "Edit chart".
+const STARTER=[
+  ['earn','Essential skills',[['📖','Read for 30 min',3],['✏️','Write a short story',3],['🔤','Practise 5 spelling words',2],['➕','Maths worksheet',3],['✍️','Practise handwriting (A–Z)',1]]],
+  ['earn','Exploration & curiosity',[['💬','Tell a summarised story',2],['🧩','Jigsaw puzzle (100+ pieces)',2],['🐜','Nature observation',2],['🧱','Build blocks from the manual',3],['🔍','Learn a new word',1]]],
+  ['earn','Chores & helping',[['🛏️','Make your bed',1],['🧸','Tidy up toys',2],['🧺','Dirty clothes in the hamper',1],['🥣','Breakfast finished by 7:15',2],['🪥','Teeth brushed & dressed by 7:30',3]]],
+  ['earn','Habits',[['🧼','Wash as soon as you get home',2],['🛁','Bath done before the alarm',2],['🍽️','Finish food without wasting',3],['🌙','Teeth brushed & ready for bed by 19:15',3],['😴','Sleep alone',4]]],
+  ['earn','Housekeeping hero',[['🧽','Dust low surfaces',1],['🧦','Fold socks & small towels',2],['🍴','Wipe the dinner table',1],['♻️','Sort recycling',1],['🧹','Clean your room for 10 min',2]]],
+  ['earn','Wellbeing wizard',[['🫧','Wash hands properly (30 sec)',1],['🥦','Eat a portion of vegetables',2],['🤸','5 minutes of stretches',2],['😊','Tell Mom/Dad one happy thing',1],['🌬️','10 calm deep breaths',1]]],
+  ['spend','Screen time',[['📺','30 min TV or tablet',5],['📱','60 min TV or tablet',9],['🎬','Choose the family movie',10]]],
+  ['spend','Treats & privileges',[['🍫','Chocolate on Saturday',5],['🍕','Choose tonight’s dinner',15],['🌟','Stay up 15 min (weekend)',15],['🦁','Trip to Leo’s Lekland',30]]]];
+async function seed(pid){let n=0;const rows=[];for(const[kind,category,list]of STARTER)for(const[icon,title,notes]of list)rows.push({household_id:hh.id,person_id:pid,kind,category,icon,title,notes,per:kind==='earn'?'day':'any',sort:n++});
+  const{data,error}=await sb.from('reward_items').insert(rows).select();if(error){toast('Couldn’t set up the chart: '+errText(error));renderRewards();return}
+  const g=data.find(i=>/Lekland/.test(i.title));if(g)await sb.from('people').update({goal_item:g.id}).eq('id',pid);await loadAll();openRw(pid,'earn')}
 
 /* ---------- settings ---------- */
 let draft=null;

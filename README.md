@@ -86,5 +86,6 @@ If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn'
 ## Notes
 - The free Supabase tier pauses a project after a week with no activity. A wall display that's always on keeps it active.
 - Supabase's built-in email sender is rate-limited and meant for testing. For more than a handful of families, add your own SMTP under Authentication → Emails.
+- **Theme**: by default the display turns dark at sunset and light at sunrise, using the sunrise and sunset times for the family's town. Each device can override it in Settings → Display (follow the device, always light, always dark).
 - Daily and weekly tasks reset automatically: a daily task counts as done only on the day it was ticked, a weekly one only in that ISO week.
 - The Västtrafik response fields were taken from their v4 API model (`estimatedOtherwisePlannedTime`, `serviceJourney.line`, …). If a field ever comes back empty, check the function logs in the Supabase dashboard.

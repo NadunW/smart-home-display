@@ -7,7 +7,7 @@ web/                         the app (static files: host anywhere)
   index.html
   config.js                  ← your Supabase URL + key go here
 supabase/
-  migrations/0001_init.sql   database, access rules, create/join family
+  migrations/                database, access rules, create/join family (applied in order)
   functions/vasttrafik/      server function that holds the Västtrafik key
 ```
 
@@ -24,7 +24,7 @@ supabase/
 
 ### 1. Supabase project
 1. Create a free project at supabase.com.
-2. **SQL Editor** → New query → paste all of `supabase/migrations/0001_init.sql` → **Run**.
+2. **SQL Editor** → New query → paste each file in `supabase/migrations/` in order → **Run**.
 3. **Authentication → URL Configuration**: set **Site URL** to the address where you'll host the app (step 4), so the confirmation and password-reset emails link back to it.
 
 ### 2. Västtrafik key
@@ -42,6 +42,25 @@ supabase secrets set VT_CLIENT_ID=xxxx VT_CLIENT_SECRET=yyyy
 supabase functions deploy vasttrafik
 ```
 Keep "Verify JWT" on (the default), so only signed-in users can use your key.
+
+### 3b. Automatic deploys (GitHub Actions)
+Instead of steps 1.2 and 3 by hand, `.github/workflows/deploy-supabase.yml` applies the database migrations and deploys the `vasttrafik` function every time `supabase/` changes on `main`. You can also run it by hand: **Actions → Deploy to Supabase → Run workflow**.
+
+Add these under **Repo → Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | Where to find it |
+|---|---|
+| `SUPABASE_ACCESS_TOKEN` | supabase.com → Account → Access Tokens → Generate |
+| `SUPABASE_PROJECT_REF` | the 20-letter id in your project URL (`https://<ref>.supabase.co`) |
+| `SUPABASE_DB_PASSWORD` | the database password you chose when creating the project |
+| `VT_CLIENT_ID` / `VT_CLIENT_SECRET` | your Västtrafik app (optional; skip if you set them in the dashboard) |
+
+If the migration step fails with an IPv6 error, add a `SUPABASE_DB_URL` secret instead, set to the **Session pooler** connection string from the project's **Connect** button. The workflow uses it when it's present.
+
+Migration files are named by the version Supabase records (`<timestamp>_<name>.sql`), so the CLI can tell which ones a project already has. Add new database changes as new files with a later timestamp (e.g. `supabase migration new add_meals`); never edit one that has already been applied.
+
+If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn't run it again:
+`supabase migration repair --status applied <version> --remote=<ref> --password <db-password>`.
 
 ### 4. Host the app
 1. Edit `web/config.js` and fill in the Project URL and the publishable (or anon) key from **Project Settings → API**. That key is meant to be public.

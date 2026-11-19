@@ -1,0 +1,61 @@
+name: Deploy to Supabase
+
+# Runs when the database or server function changes on main, or by hand from the Actions tab.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/deploy-supabase.yml"
+  workflow_dispatch:
+
+# Never run two deploys at once.
+concurrency:
+  group: supabase-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      VT_CLIENT_ID: ${{ secrets.VT_CLIENT_ID }}
+      VT_CLIENT_SECRET: ${{ secrets.VT_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.2.0
+
+      - name: Check required secrets
+        run: |
+          missing=""
+          for v in SUPABASE_ACCESS_TOKEN PROJECT_REF; do
+            [ -n "${!v}" ] || missing="$missing $v"
+          done
+          [ -n "$DB_PASSWORD" ] || [ -n "$DB_URL" ] || missing="$missing SUPABASE_DB_PASSWORD(or SUPABASE_DB_URL)"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing (see README → Automatic deploys)"
+            exit 1
+          fi
+
+      - name: Apply database migrations
+        run: |
+          if [ -n "$DB_URL" ]; then
+            supabase db push --remote="$DB_URL" --yes
+          else
+            supabase db push --remote="$PROJECT_REF" --password "$DB_PASSWORD" --yes
+          fi
+
+      - name: Set function secrets
+        if: env.VT_CLIENT_ID != '' && env.VT_CLIENT_SECRET != ''
+        run: |
+          supabase secrets set --remote="$PROJECT_REF" --yes \
+            VT_CLIENT_ID="$VT_CLIENT_ID" VT_CLIENT_SECRET="$VT_CLIENT_SECRET"
+
+      - name: Deploy server functions
+        run: supabase functions deploy vasttrafik --remote="$PROJECT_REF" --use-api --yes

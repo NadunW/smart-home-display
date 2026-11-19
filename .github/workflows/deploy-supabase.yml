@@ -25,9 +25,9 @@ jobs:
       VT_CLIENT_ID: ${{ secrets.VT_CLIENT_ID }}
       VT_CLIENT_SECRET: ${{ secrets.VT_CLIENT_SECRET }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 3.2.0
 

@@ -43,6 +43,23 @@ supabase functions deploy vasttrafik
 ```
 Keep "Verify JWT" on (the default), so only signed-in users can use your key.
 
+### 3b. Automatic deploys (GitHub Actions)
+Instead of steps 1.2 and 3 by hand, `.github/workflows/deploy-supabase.yml` applies the database migrations and deploys the `vasttrafik` function every time `supabase/` changes on `main`. You can also run it by hand: **Actions → Deploy to Supabase → Run workflow**.
+
+Add these under **Repo → Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | Where to find it |
+|---|---|
+| `SUPABASE_ACCESS_TOKEN` | supabase.com → Account → Access Tokens → Generate |
+| `SUPABASE_PROJECT_REF` | the 20-letter id in your project URL (`https://<ref>.supabase.co`) |
+| `SUPABASE_DB_PASSWORD` | the database password you chose when creating the project |
+| `VT_CLIENT_ID` / `VT_CLIENT_SECRET` | your Västtrafik app (optional; skip if you set them in the dashboard) |
+
+If the migration step fails with an IPv6 error, add a `SUPABASE_DB_URL` secret instead, set to the **Session pooler** connection string from the project's **Connect** button. The workflow uses it when it's present.
+
+If you already ran `0001_init.sql` by hand in the SQL Editor, tell the CLI once so it doesn't run it again:
+`supabase migration repair --status applied 0001 --remote=<ref> --password <db-password>`. Add new database changes as new files (`supabase/migrations/0002_….sql`); never edit one that has already been applied.
+
 ### 4. Host the app
 1. Edit `web/config.js` and fill in the Project URL and the publishable (or anon) key from **Project Settings → API**. That key is meant to be public.
 2. Put the `web` folder online. Any static host works:

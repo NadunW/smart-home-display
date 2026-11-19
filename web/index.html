@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:light dark;--bg:light-dark(#ffffff,#121116);--card:light-dark(#f1f1f3,#1d1c23);--ink:light-dark(#15141a,#f2f1f5);--mute:light-dark(#6a6874,#9a98a6);--line:light-dark(#dcdbe1,#2c2b34);--acc:#ff5a36}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Outfit,system-ui,sans-serif;overflow-x:clip}
 button,input,select{font:inherit;color:inherit}
@@ -40,7 +41,7 @@ h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
 .task .lbl{flex:1;text-align:left;font-size:17px;padding:0 4px}.task.done .lbl{color:var(--mute);text-decoration:line-through}
 .task .rep{font-size:13px;color:var(--mute);white-space:nowrap}
 .dep{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.dep:first-of-type{border-top:0}
-.line{background:#00394d;color:#fff;font-weight:700;border-radius:9px;text-align:center;padding:5px 0;font-size:18px}
+.line{background:#00394d;color:#fff;font-weight:700;border-radius:9px;text-align:center;padding:5px 0;font-size:18px;box-shadow:0 0 0 1px light-dark(transparent,#ffffff2e)}
 .dep .d{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dep .d small{color:var(--mute);font-size:14px}
 .dep .m{font-size:22px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.dep .m.soon{color:var(--acc)}
 .note{font-size:13px;color:var(--mute);margin:8px 0 0}
@@ -65,7 +66,8 @@ input,select{font-size:16px;padding:10px 12px;border-radius:12px;border:1px soli
 hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 @media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.tasks{grid-column:1/-1;order:-1}}
 @media(max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}.wx{margin-left:0}header{gap:12px 20px}.clock{font-size:64px}.tools{width:100%}.tools .pri{flex:1}}
-@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+body,.card,.dlg{transition:background-color .8s,color .8s}
+@media(prefers-reduced-motion:reduce){.bar i,body,.card,.dlg{transition:none}}
 </style></head><body>
 
 <!-- Sign in -->
@@ -140,6 +142,9 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
   <h2 style="margin:8px 0 0">Weather</h2>
   <div class="find"><input id="sPlaceQ" placeholder="Your town, e.g. Mölndal" aria-label="Search town"><button type="button" class="btn" id="sPlaceFind">Search</button></div>
   <div class="pick" id="sPlaceRes"></div><p class="msg" id="sPlaceCur"></p>
+  <h2 style="margin:8px 0 0">Display</h2>
+  <label>Theme<select id="sTheme"><option value="sun">Automatic: dark from sunset to sunrise</option><option value="device">Follow this device’s setting</option><option value="light">Always light</option><option value="dark">Always dark</option></select></label>
+  <p class="msg" style="margin:0">Saved on this device only, so the wall tablet and phones can each have their own.</p>
   <h2 style="margin:8px 0 0">Invite family members</h2>
   <p class="msg" style="margin:0">They create their own account, choose “Join family” and type this code:</p>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span class="code" id="sCode"></span><button type="button" class="btn" id="sNewCode">New code</button></div>
@@ -272,8 +277,9 @@ function renderWx(){if(!hh)return;if(!hh.lat||!wx){$('#wx').innerHTML=hh.lat?'':
   const c=wx.code,w=c===0?'Clear':c<=2?'Partly cloudy':c===3?'Cloudy':c<=48?'Fog':c<=57?'Drizzle':c<=67?'Rain':c<=77?'Snow':c<=82?'Showers':c<=86?'Snow showers':'Thunder';
   $('#wx').innerHTML=`<b>${Math.round(wx.t)}°</b><span>${esc(w)} · ${esc(hh.place||'')}<br>${Math.round(wx.hi)}° / ${Math.round(wx.lo)}°</span>`}
 async function loadWeather(){if(!hh?.lat){wx=null;renderWx();return}
-  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${hh.lat}&longitude=${hh.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`);
-    if(!r.ok)throw 0;const j=await r.json();wx={t:j.current.temperature_2m,code:j.current.weather_code,hi:j.daily.temperature_2m_max[0],lo:j.daily.temperature_2m_min[0]}}catch(e){}renderWx()}
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${hh.lat}&longitude=${hh.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto&forecast_days=1`);
+    if(!r.ok)throw 0;const j=await r.json();wx={t:j.current.temperature_2m,code:j.current.weather_code,hi:j.daily.temperature_2m_max[0],lo:j.daily.temperature_2m_min[0]};
+    const ri=new Date(j.daily.sunrise[0]),se=new Date(j.daily.sunset[0]);if(!isNaN(ri)&&!isNaN(se)){sun={rise:ri,set:se};try{localStorage.setItem('fhd.sun',JSON.stringify({rise:ri.getHours()*60+ri.getMinutes(),set:se.getHours()*60+se.getMinutes()}))}catch(e){}}}catch(e){}renderWx();applyTheme()}
 
 /* ---------- add / edit ---------- */
 function setKind(k){kind=k;document.querySelectorAll('#kind button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));
@@ -306,7 +312,7 @@ function openSet(welcome){draft={people:people.map(p=>({...p})),gid:hh.vt_gid,st
   if(welcome&&!draft.people.length)draft.people.push({name:'',color:PAL[0]});
   $('#setWelcome').hidden=!welcome;$('#sName').value=hh.name;drawMems();$('#sStopQ').value='';$('#sStopRes').innerHTML='';$('#sPlaceQ').value='';$('#sPlaceRes').innerHTML='';
   $('#sStopCur').textContent=draft.stop?'Current stop: '+draft.stop:'No stop chosen yet.';$('#sPlaceCur').textContent=draft.place?'Current town: '+draft.place:'No town chosen yet.';
-  $('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
+  $('#sTheme').value=themePref();$('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
 $('#setBtn').onclick=()=>openSet(false);
 $('#mems').oninput=e=>{const t=e.target;if(t.dataset.mi!=null)draft.people[t.dataset.mi].name=t.value;if(t.dataset.mc!=null)draft.people[t.dataset.mc].color=t.value};
 $('#mems').onclick=e=>{const i=e.target.closest('[data-mr]')?.dataset.mr;if(i!=null){draft.people.splice(+i,1);drawMems()}};
@@ -335,12 +341,29 @@ $('#fSet').onsubmit=async e=>{e.preventDefault();$('#setSave').disabled=true;msg
     $('#ovSet').classList.remove('on');await loadAll();if(gidChanged){bus={list:[],err:''};loadBus()}loadWeather()}
   catch(err){msg($('#setMsg'),'Couldn’t save: '+errText(err),true)}finally{$('#setSave').disabled=false}};
 
+/* ---------- theme ---------- */
+// Automatic: light between sunrise and sunset at the family's town, dark otherwise.
+// Times come with the weather; the last known times (minutes past midnight) are kept for the sign-in screen.
+let sun=null;
+const THK='fhd.theme';
+const themePref=()=>{try{return localStorage.getItem(THK)||'sun'}catch(e){return'sun'}};
+function sunWindow(){if(sun)return{rise:sun.rise.getHours()*60+sun.rise.getMinutes(),set:sun.set.getHours()*60+sun.set.getMinutes()};
+  try{return JSON.parse(localStorage.getItem('fhd.sun')||'null')}catch(e){return null}}
+function applyTheme(){const p=themePref();let t='';
+  if(p==='light'||p==='dark')t=p;
+  else if(p==='sun'){const w=sunWindow();if(w){const d=now(),m=d.getHours()*60+d.getMinutes();t=m>=w.rise&&m<w.set?'light':'dark'}}
+  const root=document.documentElement;if(t){if(root.dataset.theme!==t)root.dataset.theme=t}else delete root.dataset.theme;
+  const dark=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  $('meta[name=theme-color]').content=dark?'#121116':'#ffffff'}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme)}catch(e){}
+$('#sTheme').onchange=e=>{try{localStorage.setItem(THK,e.target.value)}catch(err){}applyTheme()};
+
 /* ---------- keep a wall tablet awake ---------- */
 let lock=null;const wake=async()=>{try{if('wakeLock' in navigator&&!lock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>lock=null)}}catch(e){}};
 document.addEventListener('click',wake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)wake()});
 
 /* ---------- go ---------- */
-tick();setInterval(()=>{tick();renderBus()},15000);
+applyTheme();tick();setInterval(()=>{tick();renderBus();applyTheme()},15000);
 let lastDay=ymd(now());setInterval(()=>{if(ymd(now())!==lastDay){lastDay=ymd(now());render()}},6e4);
 let started=false;
 sb.auth.onAuthStateChange((ev,session)=>{

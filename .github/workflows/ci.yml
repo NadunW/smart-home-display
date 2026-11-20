@@ -43,7 +43,7 @@ jobs:
           echo "Changed files:"; echo "$files"
           has() { echo "$files" | grep -qE "$1" && echo true || echo false; }
           {
-            echo "web=$(has '^(web/|\.github/scripts/check-web|\.github/workflows/ci\.yml)')"
+            echo "web=$(has '^(web/|tests/web/|\.github/scripts/check-web|\.github/workflows/ci\.yml)')"
             echo "supabase=$(has '^(supabase/|\.github/workflows/ci\.yml)')"
             echo "android=$(has '^(android/|\.github/workflows/(android|ci)\.yml)')"
             echo "changelog=$(has '^CHANGELOG\.md$')"
@@ -83,6 +83,23 @@ jobs:
           node-version: "22"
       - name: Syntax and structure checks
         run: node .github/scripts/check-web.mjs
+      # Opens the page in a real browser against a fake Supabase and clicks through what the
+      # family does (tests/web). A failure leaves a report with screenshots and traces.
+      - name: Install the behaviour tests
+        working-directory: tests/web
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Behaviour tests
+        working-directory: tests/web
+        run: npx playwright test
+      - name: Keep the test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-test-report
+          path: tests/web/playwright-report/
+          retention-days: 14
 
   function:
     name: Server function checks

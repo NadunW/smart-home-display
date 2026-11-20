@@ -12,6 +12,7 @@ when they were merged.
 
 ### Hosting
 - Every change is now checked automatically before it can be merged: the page, the bus-time server, the database updates and the Android app are tested first, so a broken change can't reach the display (#20).
+- Every change to the page is now also tried out in a test browser first: signing in, the tabs, bus times and trips, tasks and the reward chart are tapped through automatically, so a change that breaks one of them can't reach the display (#21).
 
 ## 1.0.4 — 2026-11-20
 

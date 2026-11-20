@@ -29,6 +29,13 @@ jobs:
 
       - uses: actions/configure-pages@v6
 
+      # Open displays check version.txt and reload themselves when it changes.
+      - name: Stamp build version
+        run: |
+          printf '%s' "$GITHUB_SHA" > web/version.txt
+          sed -i "s/const BUILD='__BUILD__'/const BUILD='$GITHUB_SHA'/" web/index.html
+          grep -q "const BUILD='$GITHUB_SHA'" web/index.html
+
       - uses: actions/upload-pages-artifact@v5
         with:
           path: web

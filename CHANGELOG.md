@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.2 — 2026-11-20
+
+### Display
+- Tabs change by themselves like a slideshow, with a bar showing when the next one comes. Empty tabs are skipped, a tap holds the current tab for a minute, and *Pause* stops it. Settings → Tabs chooses which tabs show, their order and how long each stays up (#15).
+
 ## 1.0.1 — 2026-11-20
 
 ### Display

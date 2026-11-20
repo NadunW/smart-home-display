@@ -16,7 +16,6 @@ when they were merged.
 ### Hosting
 - Updates to the display no longer fail when GitHub is slow to list the new version (#17).
 
-
 ## 1.0.2 — 2026-11-20
 
 ### Display

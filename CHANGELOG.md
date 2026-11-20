@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.9 — 2026-11-20
+
+### Display
+- New public *About* and *Privacy policy* pages, linked from the sign-in screen. They explain what the display does and how it uses Google Calendar, which Google asks for before it lets everyone connect (#25).
+
 ## 1.0.8 — 2026-11-20
 
 ### Display

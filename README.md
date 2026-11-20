@@ -99,7 +99,9 @@ If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn'
 
 **Hidden menu**: tap the top-left corner five times quickly → reload, Android settings, choose home app, close.
 
-**Updates**: install the new APK over the old one. All builds are signed with the key in `android/app/keystore/`, so they update in place. To use your own key instead, add `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` as repository secrets (changing keys means uninstalling once).
+**Page updates are automatic**: every deploy to GitHub Pages writes a new `version.txt`. Open displays (the app, Fully Kiosk, a browser tab or a phone) check it every 2 minutes and reload themselves within a few minutes of a deploy, waiting while a dialog is open, *Arrange* is on or someone is typing. No restart needed.
+
+**App updates**: install the new APK over the old one. All builds are signed with the key in `android/app/keystore/`, so they update in place. To use your own key instead, add `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` as repository secrets (changing keys means uninstalling once).
 
 ## Notes
 - The free Supabase tier pauses a project after a week with no activity. A wall display that's always on keeps it active.

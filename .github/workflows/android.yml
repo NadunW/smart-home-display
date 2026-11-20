@@ -3,13 +3,10 @@ name: Build Android app
 # Builds the wall-display APK. On main it is also published as the latest
 # release, so the tablet can always download it from the same address:
 # https://github.com/<user>/<repo>/releases/latest/download/family-display.apk
+# Pull requests are built by ci.yml instead.
 on:
   push:
     branches: [main]
-    paths:
-      - "android/**"
-      - ".github/workflows/android.yml"
-  pull_request:
     paths:
       - "android/**"
       - ".github/workflows/android.yml"

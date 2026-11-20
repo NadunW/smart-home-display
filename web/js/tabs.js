@@ -4,7 +4,7 @@
 // Which tabs show, their order and how long each stays up in the slideshow are kept per device too.
 const TABS=[['today','Today'],['bus','Bus'],['tasks','Tasks'],['rw','Rewards'],['wx','Weather']],TBK='fhd.tab',RTK='fhd.rotate';
 const tabName=id=>(TABS.find(t=>t[0]===id)||[])[1]||id;
-const RDEF={on:true,idle:60,order:TABS.map(t=>t[0]),tabs:{today:{on:true,s:20},bus:{on:true,s:20},tasks:{on:true,s:15},rw:{on:true,s:15},wx:{on:true,s:10}}};
+const RDEF={on:true,idle:60,order:TABS.map(t=>t[0]),tabs:{today:{on:true,s:20},bus:{on:true,s:20},tasks:{on:true,s:15},rw:{on:true,s:15},wx:{on:true,s:20}}};
 let rot=JSON.parse(JSON.stringify(RDEF));
 try{const v=JSON.parse(localStorage.getItem(RTK)||'{}')||{};rot.on=v.on!==false;if(+v.idle)rot.idle=+v.idle;
   if(Array.isArray(v.order))rot.order=[...new Set([...v.order.filter(id=>id in RDEF.tabs),...rot.order])];

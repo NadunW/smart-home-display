@@ -7,7 +7,8 @@
 const COLS=12,LYK='fhd.layout2';
 const WDEF={today:{tab:'today',x:0,y:0,w:6,h:8,mw:3,mh:2},soon:{tab:'today',x:6,y:0,w:6,h:5,mw:3,mh:2},rems:{tab:'today',x:6,y:5,w:6,h:3,mw:3,mh:2},
   bus:{tab:'bus',x:0,y:0,w:5,h:8,mw:3,mh:3},trips:{tab:'bus',x:5,y:0,w:7,h:8,mw:4,mh:3},tasks:{tab:'tasks',x:0,y:0,w:12,h:8,mw:3,mh:3},rw:{tab:'rw',x:0,y:0,w:12,h:8,mw:3,mh:2},
-  wxw:{tab:'wx',x:0,y:0,w:12,h:5,mw:4,mh:3}};
+  wxw:{tab:'wx',x:0,y:0,w:8,h:3,mw:4,mh:3},rain:{tab:'wx',x:8,y:0,w:4,h:3,mw:3,mh:2},week:{tab:'wx',x:0,y:3,w:8,h:5,mw:4,mh:3},
+  wear:{tab:'wx',x:8,y:3,w:4,h:3,mw:3,mh:2},warn:{tab:'wx',x:8,y:6,w:4,h:2,mw:3,mh:2}};
 const board=$('#board'),wEls=()=>[...board.querySelectorAll('.wgt')],wEl=id=>board.querySelector(`.wgt[data-w="${id}"]`);
 const narrow=matchMedia('(max-width:699px)'),calm=matchMedia('(prefers-reduced-motion: reduce)');
 const fit=({id,x,y,w,h})=>{const d=WDEF[id];w=Math.min(COLS,Math.max(d.mw,Math.round(w)||d.w));h=Math.min(40,Math.max(d.mh,Math.round(h)||d.h));
@@ -23,6 +24,8 @@ function settle(list,leadId,down){const L=list.map(b=>({...b})),lead=L.find(b=>b
 function loadLayout(){let s=[];try{s=JSON.parse(localStorage.getItem(LYK)||'[]')}catch(e){}if(!Array.isArray(s))s=[];
   // Saved before Trips existed: give the Bus tab its new default so Trips sits beside the departures.
   if(s.some(b=>b?.id==='bus')&&!s.some(b=>b?.id==='trips'))s=s.filter(b=>b?.id!=='bus');
+  // Saved before the Weather tab had more than one box: give it the new default too.
+  if(s.some(b=>b?.id==='wxw')&&!s.some(b=>b?.id==='week'))s=s.filter(b=>b?.id!=='wxw');
   const all=Object.keys(WDEF).map(id=>fit({...WDEF[id],...(s.find(b=>b&&b.id===id)||{}),id}));
   return[...new Set(Object.values(WDEF).map(d=>d.tab))].flatMap(t=>settle(all.filter(b=>WDEF[b.id].tab===t)))}
 let layout=loadLayout(),arranging=false,drag=null,cellRows=0;

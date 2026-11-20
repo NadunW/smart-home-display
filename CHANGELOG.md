@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.11 — 2026-11-21
+
+### Display
+- The Weather tab has four new boxes: rain in the next 2 hours (when it starts and stops, in 15-minute bars), what to wear for the school day (tomorrow's after 17:00), the next 7 days, and SMHI's weather warnings for our area, in English. Tomorrow's summary is gone, since the 7 days show it. The Weather tab now stays up for 20 seconds in the slideshow on a display that hasn't changed it (#27).
+
 ## 1.0.10 — 2026-11-21
 
 ### Display

@@ -78,17 +78,48 @@ export function vasttrafik() {
   };
 }
 
-// Open-Meteo forecast with timezone=auto: local times without an offset.
+// Open-Meteo forecast with timezone=auto: local times without an offset. Seven days, every day
+// like the first: cloudy mornings, rain from midday. Feels 3° colder than it is.
+// The 15-minute rain: dry until 08:15, rain 08:15–09:00, then dry again (each step is labelled
+// with its end time and holds the rain of the 15 minutes before it).
 export function weather() {
-  const time = [], temperature_2m = [], weather_code = [], precipitation_probability = [], is_day = [];
-  for (let d = 0; d < 2; d++) for (let h = 0; h < 24; h++) {
+  const time = [], temperature_2m = [], apparent_temperature = [], weather_code = [], precipitation_probability = [], precipitation = [], wind_speed_10m = [], is_day = [];
+  for (let d = 0; d < 7; d++) for (let h = 0; h < 24; h++) {
     time.push(`2026-11-${18 + d}T${String(h).padStart(2, '0')}:00`);
-    temperature_2m.push(2 + h / 4); weather_code.push(h < 12 ? 3 : 61); precipitation_probability.push(h < 12 ? 10 : 60); is_day.push(h >= 8 && h < 16 ? 1 : 0);
+    temperature_2m.push(2 + h / 4); apparent_temperature.push(-1 + h / 4); weather_code.push(h < 12 ? 3 : 61);
+    precipitation_probability.push(h < 12 ? 10 : 60); precipitation.push(h < 12 ? 0 : 0.6); wind_speed_10m.push(5); is_day.push(h >= 8 && h < 16 ? 1 : 0);
+  }
+  const days = [...Array(7)].map((_, d) => `2026-11-${18 + d}`);
+  const m15 = { time: [], precipitation: [], snowfall: [] };
+  for (let q = 0; q < 12; q++) {
+    const min = 7 * 60 + 15 + q * 15, t = `2026-11-18T${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+    m15.time.push(t); m15.precipitation.push(t >= '2026-11-18T08:30' && t <= '2026-11-18T09:00' ? 0.3 : 0); m15.snowfall.push(0);
   }
   return {
     current: { temperature_2m: 4.2, apparent_temperature: 1.1, weather_code: 3, wind_speed_10m: 5.4, is_day: 0 },
-    hourly: { time, temperature_2m, weather_code, precipitation_probability, is_day },
-    daily: { time: ['2026-11-18', '2026-11-19'], weather_code: [61, 0], temperature_2m_max: [7.6, 5.2], temperature_2m_min: [1.4, -1.0],
-      precipitation_probability_max: [70, 5], sunrise: ['2026-11-18T08:05', '2026-11-19T08:07'], sunset: ['2026-11-18T15:40', '2026-11-19T15:38'] },
+    hourly: { time, temperature_2m, apparent_temperature, weather_code, precipitation_probability, precipitation, wind_speed_10m, is_day },
+    daily: { time: days, weather_code: [61, 0, 3, 61, 71, 2, 1], temperature_2m_max: [7.6, 5.2, 6, 8.4, 1.2, 3, 4], temperature_2m_min: [1.4, -1.0, 2, 4.1, -3.6, -2, 0],
+      precipitation_probability_max: [70, 5, 10, 80, 60, 10, 0], precipitation_sum: [4.2, 0, 0, 9.6, 3, 0, 0],
+      sunrise: days.map(d => d + 'T08:05'), sunset: days.map(d => d + 'T15:40') },
+    minutely_15: m15,
   };
+}
+
+// SMHI's warnings feed. A box around Gothenburg as [lon, lat] rings (the family lives at 57.71, 11.97).
+const box = (w, s, e, n) => ({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } });
+const area = (o) => ({ id: o.id, approximateStart: o.from, ...(o.to ? { approximateEnd: o.to } : {}), published: '2026-11-17T12:00:00.000Z',
+  areaName: { sv: o.name, en: o.name }, warningLevel: { code: o.level, en: o.level }, eventDescription: { en: o.what, sv: o.what },
+  affectedAreas: [], descriptions: [{ title: { code: 'INCIDENT', en: 'Description of incident' }, text: { en: o.text, sv: o.text } },
+    { title: { code: 'AFFECT', en: 'What should I think about?' }, text: { en: 'Secure loose objects.', sv: '' } }],
+  area: o.geo });
+export function warnings() {
+  const gbg = box(11.5, 57.4, 12.5, 58.0), sthlm = box(17.5, 59.0, 18.5, 59.6);
+  return [
+    { id: 1, event: { en: 'Wind', code: 'WIND' }, warningAreas: [
+      area({ id: 11, level: 'YELLOW', what: 'Wind', name: 'Coast of Västra Götaland', from: '2026-11-18T05:00:00.000Z', to: '2026-11-19T11:00:00.000Z', text: 'Gusts of 25 m/s along the coast.', geo: gbg }),
+      area({ id: 12, level: 'ORANGE', what: 'Snow', name: 'Stockholm', from: '2026-11-18T05:00:00.000Z', to: '2026-11-19T11:00:00.000Z', text: 'Heavy snow.', geo: sthlm }),
+      area({ id: 13, level: 'YELLOW', what: 'Rain', name: 'Göteborg', from: '2026-11-17T05:00:00.000Z', to: '2026-11-18T05:00:00.000Z', text: 'Over already.', geo: gbg })] },
+    { id: 2, event: { en: 'Risk for water shortage', code: 'WATER_SHORTAGE' }, warningAreas: [
+      area({ id: 21, level: 'MESSAGE', what: 'Risk for water shortage', name: 'Västra Götalands län', from: '2026-05-01T00:00:00.000Z', text: 'Low groundwater.', geo: gbg })] },
+  ];
 }

@@ -10,7 +10,7 @@ Nothing goes to the internet:
 - **Supabase** is replaced by `fake/supabase.js`, which keeps the family's data in memory
   and answers the same calls (tables, `reward_earn`/`reward_spend` and the other database
   functions, sign-in, realtime, the `vasttrafik` function).
-- **Open-Meteo** and the web font are answered from `harness.js`.
+- **Open-Meteo**, **SMHI's warnings** and the web font are answered from `harness.js` (no warnings unless a test passes `warnings`).
 - **The clock** is set to Wednesday 18 November 2026, 07:30 in Europe/Stockholm, so bus
   times, "Leave in 6 min" and the daily tasks read the same on every run.
 

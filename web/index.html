@@ -56,7 +56,11 @@
   <section class="card wgt" data-w="bus"><h2 id="busH">Next departures</h2><div class="wb" id="bus"></div></section>
   <section class="card wgt" data-w="trips"><h2>Trips</h2><button type="button" class="btn hbtn" id="tripAdd">+ Trip</button><div class="wb" id="trips"></div></section>
   <section class="card wgt" data-w="rems"><h2>Reminders</h2><div class="wb" id="rems"></div></section>
-  <section class="card wgt" data-w="wxw"><h2 id="wxH">Weather</h2><div class="wb"><div class="fc" id="fc" aria-label="Forecast for the coming hours"></div><div class="tom" id="tom"></div></div></section>
+  <section class="card wgt" data-w="wxw"><h2 id="wxH">Weather</h2><div class="wb"><div class="fc" id="fc" aria-label="Forecast for the coming hours"></div><div id="fcE"></div></div></section>
+  <section class="card wgt" data-w="rain"><h2>Rain in the next 2 hours</h2><div class="wb" id="rain2"></div></section>
+  <section class="card wgt" data-w="wear"><h2>What to wear</h2><div class="wb" id="wear"></div></section>
+  <section class="card wgt" data-w="week"><h2>Next 7 days</h2><div class="wb" id="week"></div></section>
+  <section class="card wgt" data-w="warn" id="warnCard"><h2>SMHI warnings</h2><div class="wb" id="warn" aria-live="polite"></div></section>
 </main>
 <footer class="status"><span id="status"></span><span id="ver"></span></footer>
 </div>
@@ -163,6 +167,7 @@
 <script src="js/auth.js?v=dev"></script>
 <script src="js/board.js?v=dev"></script>
 <script src="js/trips.js?v=dev"></script>
+<script src="js/warnings.js?v=dev"></script>
 <script src="js/weather.js?v=dev"></script>
 <script src="js/add.js?v=dev"></script>
 <script src="js/rewards.js?v=dev"></script>

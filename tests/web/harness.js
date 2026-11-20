@@ -1,5 +1,5 @@
 // Opens the real web/index.html in the browser with everything outside the page faked:
-// Supabase (fake/supabase.js), the Västtrafik function, Open-Meteo, and the clock.
+// Supabase (fake/supabase.js), the Västtrafik function, Open-Meteo, SMHI's warnings, and the clock.
 // The page is served from http://display.test/, so nothing goes out to the internet.
 import { test as base, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
@@ -18,7 +18,7 @@ class Display {
   // state: the fake backend's starting data (see fixtures.seed). storage: localStorage
   // entries for this device, e.g. { 'fhd.tab': 'bus' }. Both are set once, before the
   // first load; a reload keeps whatever the page changed.
-  async open({ state = seed(), storage = {}, time = NOW, weatherData = weather() } = {}) {
+  async open({ state = seed(), storage = {}, time = NOW, weatherData = weather(), warnings = [] } = {}) {
     const { page } = this;
     await page.clock.install({ time });
     await page.addInitScript(({ state, storage }) => {
@@ -42,6 +42,9 @@ class Display {
       r.fulfill({ path: path.join(here, 'fake/supabase.js'), contentType: 'text/javascript' }));
     await page.route('https://api.open-meteo.com/**', r =>
       weatherData ? r.fulfill({ json: weatherData }) : r.fulfill({ status: 503, body: '' }));
+    // SMHI's weather warnings: none, unless a test passes some (fixtures.warnings()); null makes SMHI fail.
+    await page.route('https://opendata-download-warnings.smhi.se/**', r =>
+      warnings ? r.fulfill({ json: warnings }) : r.fulfill({ status: 503, body: '' }));
     // The Outfit web font: an empty stylesheet, so the page falls back to the system font.
     await page.route('https://fonts.googleapis.com/**', r => r.fulfill({ body: '', contentType: 'text/css' }));
     await page.route('https://geocoding-api.open-meteo.com/**', r =>

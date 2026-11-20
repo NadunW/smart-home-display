@@ -43,7 +43,33 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .fc>div{flex:1 0 70px;display:grid;justify-items:center;gap:2px;padding:4px 2px;font-variant-numeric:tabular-nums}
 .fc small{color:var(--mute);font-size:16px}.fc i{font-style:normal;font-size:38px;line-height:1.2}.fc b{font-size:26px;font-weight:600}
 .fc .p{font-size:15px;color:light-dark(#1f6fc4,#6cb4ff);min-height:20px}.fc .nd{border-left:1px solid var(--line)}
-.tom{display:flex;align-items:center;gap:14px;margin-top:14px;font-size:18px}.tom .ic{font-size:44px;line-height:1}.tom small{color:var(--mute);font-size:16px}
+/* Rain in the next 2 hours: 15-minute bars. */
+.rh{margin:0 0 10px;font-size:20px;font-weight:600;line-height:1.25;color:light-dark(#1f6fc4,#6cb4ff)}.rh.dry{color:var(--ink)}
+.rbars{display:flex;align-items:flex-end;gap:4px;height:max(48px,calc(100% - 82px));min-height:48px;border-bottom:2px solid var(--line)}
+.rbars i{flex:1;height:100%;display:flex;align-items:flex-end}.rbars b{width:100%;border-radius:6px 6px 0 0;background:light-dark(#1f6fc4,#6cb4ff)}
+.rx{display:flex;justify-content:space-between;color:var(--mute);font-size:14px;margin-top:4px;font-variant-numeric:tabular-nums}
+#rain2{display:flex;flex-direction:column}
+@media(max-width:699px){.rbars{height:70px}}
+/* What to wear. */
+.wh{margin:0 0 8px;color:var(--mute);font-size:15px}
+.wear{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 12px}
+.wear li{display:flex;align-items:center;gap:10px;font-size:17px;line-height:1.2}.wear i{font-style:normal;font-size:28px;line-height:1}
+/* Next 7 days: one row per day, with the day's low–high as a bar within the week's range. */
+#week{display:flex;flex-direction:column;justify-content:space-around}
+.dayrow{display:grid;grid-template-columns:88px 40px 100px 40px minmax(60px,1fr) 40px;align-items:center;gap:10px;font-size:19px;font-variant-numeric:tabular-nums;padding:2px 0;border-top:1px solid var(--line)}
+.dayrow:first-child{border-top:0}.dayrow .d{font-weight:500}.dayrow.now .d{font-weight:700}.dayrow i{font-style:normal;font-size:28px;line-height:1.2;text-align:center}
+.dayrow .p{color:light-dark(#1f6fc4,#6cb4ff);font-size:15px;white-space:nowrap}.dayrow .p small{color:var(--mute);font-size:13px}.dayrow .lo{color:var(--mute);text-align:right}.dayrow .hi{font-weight:600}
+.dayrow .bar{position:relative;height:8px;border-radius:4px;background:var(--bg)}.dayrow .bar b{position:absolute;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#4aa3ff,#ffb020)}
+@container (max-width:420px){.dayrow{grid-template-columns:64px 32px 46px 30px minmax(30px,1fr) 30px;gap:6px;font-size:16px}.dayrow .p small{display:none}}
+/* SMHI warnings: SMHI's own shapes, a yellow circle, an orange diamond and a red triangle. */
+.wok{margin:0;font-size:17px}.wok b{color:#2e9e5b;margin-right:4px}
+.wn{display:flex;gap:12px;align-items:flex-start;padding:2px 0 8px;border-top:1px solid var(--line)}.wn:first-child{border-top:0}
+.wn b{display:block;font-size:18px;font-weight:600;line-height:1.25}.wn small{display:block;color:var(--mute);font-size:14px;line-height:1.3}.wn .when{color:var(--ink);font-size:15px;font-weight:500}
+.wn+.wn{padding-top:8px}#warnCard h2{margin-bottom:6px}
+.wn p{margin:4px 0 0;font-size:15px;line-height:1.35}.wn details{margin-top:4px;font-size:14px;color:var(--mute)}.wn summary{cursor:pointer}
+.wn .sym{flex:none;width:22px;height:22px;margin-top:2px}.wn.y .sym{background:#ffd200;border-radius:50%}
+.wn.o .sym{background:#ff8a00;transform:rotate(45deg) scale(.78);border-radius:3px}.wn.r .sym{background:#e4002b;clip-path:polygon(50% 4%,100% 96%,0 96%)}
+#warnCard.wy{box-shadow:inset 6px 0 0 #ffd200}#warnCard.wo{box-shadow:inset 6px 0 0 #ff8a00}#warnCard.wr{box-shadow:inset 6px 0 0 #e4002b}
 .count{white-space:nowrap;background:var(--acc);color:#fff;border-radius:999px;padding:6px 16px;font-weight:500;font-size:17px;display:flex;align-items:baseline;gap:8px}.count b{font-size:22px;line-height:1.1}
 .tools{display:flex;gap:8px;margin-left:auto}#thBtn{min-width:44px;padding:0 12px;font-size:20px}
 .btn{background:var(--card);padding:0 16px;font-weight:500}.btn.pri{background:var(--ink);color:var(--bg)}

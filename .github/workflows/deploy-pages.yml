@@ -33,7 +33,8 @@ jobs:
       - name: Stamp build version
         run: |
           printf '%s' "$GITHUB_SHA" > web/version.txt
-          sed -i "s/const BUILD='__BUILD__'/const BUILD='$GITHUB_SHA'/" web/index.html
+          BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          sed -i "s/const BUILD='__BUILD__',BUILD_NO='__BUILD_NO__',BUILT='__BUILT__'/const BUILD='$GITHUB_SHA',BUILD_NO='$GITHUB_RUN_NUMBER',BUILT='$BUILT'/" web/index.html
           grep -q "const BUILD='$GITHUB_SHA'" web/index.html
 
       - uses: actions/upload-pages-artifact@v5

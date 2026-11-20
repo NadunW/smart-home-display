@@ -13,6 +13,10 @@ when they were merged.
 ### Server
 - The Västtrafik function can plan trips and find addresses and places, not just stops (#16).
 
+### Hosting
+- Updates to the display no longer fail when GitHub is slow to list the new version (#17).
+
+
 ## 1.0.2 — 2026-11-20
 
 ### Display

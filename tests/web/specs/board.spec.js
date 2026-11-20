@@ -1,6 +1,6 @@
 // The family board: header, tabs, the Today/Bus/Tasks/Weather boxes and the slideshow.
 import { test, expect } from '../harness.js';
-import { NOW, TODAY, seed } from '../fixtures.js';
+import { NOW, TODAY, seed, warnings } from '../fixtures.js';
 
 test.describe('header and footer', () => {
   test.beforeEach(async ({ display }) => { await display.open(); });
@@ -47,7 +47,7 @@ test.describe('header and footer', () => {
 });
 
 test.describe('tabs', () => {
-  const BOXES = { Today: ['today', 'soon', 'rems'], Bus: ['bus', 'trips'], Tasks: ['tasks'], Rewards: ['rw'], Weather: ['wxw'] };
+  const BOXES = { Today: ['today', 'soon', 'rems'], Bus: ['bus', 'trips'], Tasks: ['tasks'], Rewards: ['rw'], Weather: ['wxw', 'rain', 'wear', 'week', 'warn'] };
   const ALL = Object.values(BOXES).flat();
 
   test('each tab shows only its own boxes', async ({ display }) => {
@@ -178,15 +178,88 @@ test.describe('Tasks', () => {
   });
 });
 
-test('Weather tab shows the hours ahead and tomorrow', async ({ display }) => {
-  await display.open({ storage: { 'fhd.tab': 'wx' } });
-  const box = display.box('wxw');
-  await expect(box.locator('h2')).toHaveText('Weather · Göteborg');
-  // 07:30, so the strip starts at 08 and runs to the end of the day, every 2 hours.
-  await expect(box.locator('.fc > div').first()).toContainText('08');
-  await expect(box.locator('.fc > div')).toHaveCount(8);
-  await expect(box.locator('#tom')).toContainText('Tomorrow · Clear');
-  await expect(box.locator('#tom')).toContainText('5° / -1°');
+test.describe('Weather tab', () => {
+  test('shows the hours ahead', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' } });
+    const box = display.box('wxw');
+    await expect(box.locator('h2')).toHaveText('Weather · Göteborg');
+    // 07:30, so the strip starts at 08 and runs to the end of the day, every 2 hours.
+    await expect(box.locator('.fc > div').first()).toContainText('08');
+    await expect(box.locator('.fc > div')).toHaveCount(8);
+    await expect(display.page.getByText('Tomorrow ·')).toHaveCount(0);
+  });
+
+  test('says when the rain starts and stops in the next 2 hours', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' } });
+    const box = display.box('rain');
+    await expect(box.locator('.rh')).toHaveText('Rain from around 08:15, until about 09:00');
+    await expect(box.locator('.rbars i')).toHaveCount(8);
+    await expect(box.locator('.rx')).toHaveText(/Now\s*08:30\s*09:30/);
+  });
+
+  test('says when it stays dry', async ({ display }) => {
+    const { weather } = await import('../fixtures.js');
+    const w = weather(); w.minutely_15.precipitation = w.minutely_15.precipitation.map(() => 0);
+    await display.open({ storage: { 'fhd.tab': 'wx' }, weatherData: w });
+    await expect(display.box('rain').locator('.rh')).toHaveText('Dry for the next 2 hours');
+  });
+
+  test('suggests what to wear for the school day', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' } });
+    const box = display.box('wear');
+    await expect(box.locator('.wh')).toHaveText('Today 07–17 · feels 1° · rain likely');
+    await expect(box.locator('li')).toHaveText(['🧥Lined rain jacket and trousers', '🧶Thin hat', '🧤Gloves', '👢Lined rubber boots']);
+  });
+
+  test('after 17:00 what to wear is for tomorrow', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' }, time: new Date('2026-11-18T18:00:00+01:00') });
+    await expect(display.box('wear').locator('.wh')).toHaveText(/^Tomorrow 07–17/);
+  });
+
+  test('shows the next 7 days with lows, highs and rain', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' } });
+    const rows = display.box('week').locator('.dayrow');
+    await expect(rows).toHaveCount(7);
+    await expect(rows.nth(0)).toHaveText(/Today[\s\S]*70%\s*4 mm\s*1°\s*8°/);
+    await expect(rows.nth(1)).toHaveText(/Thu 19[\s\S]*-1°\s*5°/);
+    await expect(rows.nth(4)).toHaveText(/Sun 22[\s\S]*60%\s*3 mm\s*-4°\s*1°/);
+  });
+
+  test('shows SMHI warnings that cover home, in English, and leaves out the rest', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' }, warnings: warnings() });
+    const box = display.box('warn');
+    const items = box.locator('.wn');
+    await expect(items).toHaveCount(1);
+    await expect(items).toContainText('Wind');
+    await expect(items).toContainText('Yellow warning · Coast of Västra Götaland');
+    await expect(items).toContainText('Now until tomorrow 12:00');
+    await expect(items).toContainText('Gusts of 25 m/s along the coast.');
+    await expect(box).toHaveClass(/wy/);
+    for (const t of ['Stockholm', 'Over already', 'water shortage']) await expect(box).not.toContainText(t);
+  });
+
+  test('says when there are no warnings', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' } });
+    await expect(display.box('warn')).toContainText('No weather warnings for Göteborg');
+  });
+
+  test('says when SMHI can’t be reached', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' }, warnings: null });
+    await expect(display.box('warn')).toContainText('Couldn’t reach SMHI just now.');
+  });
+
+  test('a layout saved before these boxes gets the new Weather tab layout', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx', 'fhd.layout2': [{ id: 'wxw', x: 0, y: 0, w: 12, h: 5 }] } });
+    const a = await display.box('wxw').boundingBox(), b = await display.box('rain').boundingBox();
+    expect(b.x).toBeGreaterThan(a.x + a.width - 1);
+    expect(Math.abs(b.y - a.y)).toBeLessThan(2);
+  });
+
+  test('the boxes stack on a phone @phone', async ({ display }) => {
+    await display.open({ storage: { 'fhd.tab': 'wx' }, warnings: warnings() });
+    for (const id of ['wxw', 'rain', 'wear', 'week', 'warn']) await expect(display.box(id)).toBeVisible();
+    await expect(display.box('rain').locator('.rbars')).toHaveCSS('height', '70px');
+  });
 });
 
 test.describe('slideshow', () => {

@@ -85,6 +85,13 @@ class Display {
 }
 
 export const test = base.extend({
-  display: async ({ page }, use) => { await use(new Display(page)); },
+  display: async ({ page }, use) => {
+    // Any uncaught error in the page fails the test, even if the screen looked right
+    // (for example a script that stops halfway while loading).
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.stack || e.message));
+    await use(new Display(page));
+    expect(errors, 'errors in the page').toEqual([]);
+  },
 });
 export { expect };

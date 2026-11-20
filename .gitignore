@@ -1,3 +1,6 @@
 .DS_Store
 .env
 supabase/.temp/
+tests/web/node_modules/
+tests/web/test-results/
+tests/web/playwright-report/

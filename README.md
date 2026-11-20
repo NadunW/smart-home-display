@@ -103,6 +103,8 @@ If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn'
 
 **Version number**: the footer shows e.g. *Version 1.0.3 · updated today 09:51*. `1.0` comes from the `VERSION` file; the last number counts the changes to `web/` merged since `VERSION` was last edited, so it goes up by itself. To start a new version, change `VERSION` (say to `1.1`) and the count restarts at `1.1.0`.
 
+**Changelog**: see [CHANGELOG.md](CHANGELOG.md). Every pull request adds its line there, under the version it will become.
+
 **App updates**: install the new APK over the old one. All builds are signed with the key in `android/app/keystore/`, so they update in place. To use your own key instead, add `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` as repository secrets (changing keys means uninstalling once).
 
 ## Notes

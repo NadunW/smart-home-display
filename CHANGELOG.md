@@ -5,6 +5,14 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.3 — 2026-11-20
+
+### Display
+- New *Trips* box on the Bus tab: save trips like Office, University or School and see when to leave, the next connections with arrival times, delays and the lines on the way, like the Västtrafik app (#16).
+
+### Server
+- The Västtrafik function can plan trips and find addresses and places, not just stops (#16).
+
 ## 1.0.2 — 2026-11-20
 
 ### Display

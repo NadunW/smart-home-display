@@ -92,6 +92,21 @@ h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
   #rw:has(.rwp){columns:2 320px;column-gap:32px}#rw .rwp{break-inside:avoid;padding-bottom:8px}
 }
 .note{font-size:13px;color:var(--mute);margin:8px 0 0}
+/* Trips: saved trips with when to leave, when you arrive and the lines on the way. */
+.hbtn{position:absolute;top:10px;right:12px;min-height:36px;padding:0 12px;font-size:14px;background:var(--bg)}
+.trip{padding:10px 0;border-top:1px solid var(--line)}.trip:first-child{border-top:0;padding-top:0}
+.trip-h{display:flex;align-items:center;gap:10px}
+.trip-h .tn{flex:1;display:flex;align-items:center;gap:10px;text-align:left;padding:0;border-radius:10px}
+.trip-h .ti{font-size:26px;width:36px;text-align:center;flex:none}
+.trip-h b{display:block;font-size:19px;font-weight:600}.trip-h small{display:block;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv{font-size:20px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.lv.soon{color:var(--acc)}
+.jr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:6px 0 6px 46px}
+.jt{font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.25}.jt b{font-weight:600}.jt .lt{color:var(--acc)}.jt s{display:block;color:var(--mute);font-size:13px}
+.chain{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.chain .line{padding:2px 8px;min-width:36px;font-size:15px;border-radius:7px}
+.wk{color:var(--mute);font-size:13px;white-space:nowrap}.dur{color:var(--mute);font-size:14px;white-space:nowrap}
+.jr.gone{opacity:.5}.jr.gone .jt b{text-decoration:line-through}
+.jd{grid-column:1/-1;color:var(--mute);font-size:13px;margin:0}
+@container (min-width:520px){.jt{font-size:20px}.lv{font-size:26px}.chain .line{font-size:17px}.jd{font-size:14px}}
 .rem{display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.rem:first-of-type{border-top:0}.rem .lbl{flex:1;text-align:left;font-size:17px}.rem small{color:var(--mute);display:block;font-size:14px}
 .ok{width:44px;flex:none;color:var(--mute);font-size:22px}
 .ov{position:fixed;inset:0;background:rgb(0 0 0/.5);display:none;place-items:center;padding:16px;z-index:9}.ov.on{display:grid}
@@ -191,6 +206,7 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
   <section class="card wgt" data-w="tasks"><h2>Family tasks</h2><div class="wb" id="tasks"></div></section>
   <section class="card wgt" data-w="rw" id="rwCard"><h2>Reward notes</h2><div class="wb" id="rw"></div></section>
   <section class="card wgt" data-w="bus"><h2 id="busH">Next departures</h2><div class="wb" id="bus"></div></section>
+  <section class="card wgt" data-w="trips"><h2>Trips</h2><button type="button" class="btn hbtn" id="tripAdd">+ Trip</button><div class="wb" id="trips"></div></section>
   <section class="card wgt" data-w="rems"><h2>Reminders</h2><div class="wb" id="rems"></div></section>
   <section class="card wgt" data-w="wxw"><h2 id="wxH">Weather</h2><div class="wb"><div class="fc" id="fc" aria-label="Forecast for the coming hours"></div><div class="tom" id="tom"></div></div></section>
 </main>
@@ -226,6 +242,22 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
   <div class="acts"><button type="button" class="btn danger" id="riDel">Delete</button><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save</button></div>
 </form></div>
 <div class="toast" id="toast" role="status" hidden></div>
+
+<div class="ov" id="ovTrip"><form class="dlg" id="fTrip">
+  <h3 id="tripH">Add trip</h3>
+  <div class="seg" id="tripPre" aria-label="Quick picks"></div>
+  <div class="row" style="grid-template-columns:84px minmax(0,1fr)"><label>Icon<input id="tIcon" maxlength="8" placeholder="📍" autocomplete="off"></label><label>Name<input id="tName" required maxlength="40" autocomplete="off" placeholder="e.g. Office"></label></div>
+  <h2 style="margin:4px 0 0">From</h2><p class="msg" id="tFromCur"></p>
+  <div class="find"><input id="tFromQ" placeholder="Stop, address or place" aria-label="Search where the trip starts"><button type="button" class="btn" data-tfind="from">Search</button></div>
+  <div class="pick" id="tFromRes"></div>
+  <h2 style="margin:4px 0 0">To</h2><p class="msg" id="tToCur"></p>
+  <div class="find"><input id="tToQ" placeholder="Stop, address or place" aria-label="Search where the trip goes"><button type="button" class="btn" data-tfind="to">Search</button></div>
+  <div class="pick" id="tToRes"></div>
+  <label>Minutes to walk to where the trip starts<input type="number" id="tWalk" min="0" max="60" inputmode="numeric"></label>
+  <p class="msg" style="margin:0">The display counts down to when you need to leave the house.</p>
+  <p class="msg" id="tMsg" role="status"></p>
+  <div class="acts"><button type="button" class="btn danger" id="tDel">Delete</button><button type="button" class="btn" data-close>Cancel</button><button class="btn pri" id="tSave">Save</button></div>
+</form></div>
 
 <div class="ov" id="ovSet"><form class="dlg" id="fSet">
   <h3>Settings</h3>
@@ -318,11 +350,13 @@ async function start(){const{data:{session}}=await sb.auth.getSession();user=ses
 async function openHousehold(id){stopBoard();try{localStorage.setItem('fhd.household',id)}catch(e){}
   const{data,error}=await sb.from('households').select('*').eq('id',id).single();if(error){show('vSetup');return msg($('#sMsg'),errText(error),true)}
   hh=data;show('vBoard');await loadAll();subscribe();loadBus();loadWeather();rotSchedule();
-  timers.push(setInterval(loadBus,60000),setInterval(loadWeather,15*6e4),setInterval(loadAll,5*6e4))}
-function stopBoard(){timers.forEach(clearInterval);timers=[];if(chan){sb.removeChannel(chan);chan=null}hh=null;people=[];items=[];rItems=[];rLog=[];rBal={};rOff=false;$('#ovRw').classList.remove('on')}
+  timers.push(setInterval(loadBus,60000),setInterval(()=>loadTrips(),60000),setInterval(loadWeather,15*6e4),setInterval(loadAll,5*6e4))}
+function stopBoard(){timers.forEach(clearInterval);timers=[];if(chan){sb.removeChannel(chan);chan=null}hh=null;people=[];items=[];trips=[];tripRes={};tripSig={};tripAt=0;rItems=[];rLog=[];rBal={};rOff=false;$('#ovRw').classList.remove('on')}
 
 const norm=r=>({...r,time:r.time?String(r.time).slice(0,5):''});
-async function loadAll(){if(!hh)return;const[p,i]=await Promise.all([sb.from('people').select('*').eq('household_id',hh.id).order('sort'),sb.from('items').select('*').eq('household_id',hh.id),loadRewards()]);
+async function loadAll(){if(!hh)return;const[p,i,,tr]=await Promise.all([sb.from('people').select('*').eq('household_id',hh.id).order('sort'),sb.from('items').select('*').eq('household_id',hh.id),loadRewards(),
+    sb.from('trips').select('*').eq('household_id',hh.id).order('sort').order('created_at')]);
+  if(!tr.error)setTrips(tr.data);
   if(p.error||i.error){status('Can’t reach the server right now — showing what’s loaded.');return}
   people=p.data;items=i.data.map(norm);applyScreen();status('Synced · '+pad(now().getHours())+':'+pad(now().getMinutes()));render()}
 let reT=0;const refetch=()=>{clearTimeout(reT);reT=setTimeout(loadAll,300)};
@@ -337,9 +371,11 @@ function subscribe(){const f='household_id=eq.'+hh.id;
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'reward_items'},refetch)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'reward_log',filter:f},refetch)
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'reward_log'},refetch)
+    .on('postgres_changes',{event:'*',schema:'public',table:'trips',filter:f},refetch)
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'trips'},refetch)
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'households',filter:'id=eq.'+hh.id},p=>{const gid=hh.vt_gid;hh={...hh,...p.new};render();if(hh.vt_gid!==gid)loadBus();loadWeather()})
     .subscribe(s=>{if(s==='SUBSCRIBED')refetch()})}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hh){loadAll();loadBus()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hh){loadAll();loadBus();loadTrips(true)}});
 
 /* ---------- items ---------- */
 const person=id=>people.find(p=>p.id===id);
@@ -379,7 +415,7 @@ function render(){if(!hh)return;
     :`<p class="empty">${people.length?'No tasks yet. Tap “+ Add” to give someone a chore.':'Open Settings to add the people in your family.'}</p>`;
   const rems=items.filter(i=>i.type==='reminder').sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
   $('#rems').innerHTML=rems.length?rems.map(r=>`<div class="rem"><span class="av" style="background:${esc(colorOf(r.person_id))}">${esc(nameOf(r.person_id)[0])}</span><button class="lbl" data-edit="${esc(r.id)}">${esc(r.title)}<small>${r.date?esc(new Date(r.date+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}))+(r.time?' '+esc(r.time):''):esc(nameOf(r.person_id))}</small></button><button class="ok" data-toggle="${esc(r.id)}" aria-label="Dismiss reminder">✓</button></div>`).join(''):'<p class="empty">No reminders.</p>';
-  renderRewards();if($('#ovRw').classList.contains('on'))drawRw();renderBus();renderWx();applyTab()}
+  renderRewards();if($('#ovRw').classList.contains('on'))drawRw();renderBus();renderTrips();renderWx();applyTab()}
 
 const lineTag=b=>`<span class="line"${b.bg?` style="background:${esc(b.bg)};color:${esc(b.fg||'#fff')}"`:''}>${esc(b.line)}</span>`;
 const minTxt=m=>m<=0?'Now':m+' min';
@@ -395,6 +431,73 @@ function renderBus(){if(!hh)return;$('#busH').textContent='Next departures'+(hh.
 async function loadBus(){if(!hh?.vt_gid){renderBus();return}
   const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'departures',gid:hh.vt_gid}});
   if(error||data?.error)bus={list:bus.list,err:'Live times unavailable right now.'};else bus={list:data.departures||[],err:''};renderBus()}
+
+/* ---------- trips ---------- */
+// Saved trips (Office, School…) with the next connections from Västtrafik's trip planner: when to leave
+// the house, when you arrive, delays, and the lines and walks on the way.
+let trips=[],tripRes={},tripSig={},tripAt=0,tripEditing=null,tripDraft={from:null,to:null},tripFound={from:[],to:[]};
+const hm=t=>{const d=new Date(t);return t&&!isNaN(d)?pad(d.getHours())+':'+pad(d.getMinutes()):''};
+const late=(a,p)=>!!(a&&p)&&Math.round((new Date(a)-new Date(p))/6e4)!==0;
+const tEnd=(t,s)=>t[s+'_gid']?{gid:t[s+'_gid']}:{lat:t[s+'_lat'],lon:t[s+'_lon'],name:t[s+'_name']};
+const MODE={bus:'Bus',tram:'Tram',train:'Train',ferry:'Boat',taxi:'Taxi'};
+function setTrips(rows){trips=rows;const ids=new Set(rows.map(t=>t.id)),todo=[];
+  for(const id in tripRes)if(!ids.has(id)){delete tripRes[id];delete tripSig[id]}
+  for(const t of rows){const sig=JSON.stringify([tEnd(t,'from'),tEnd(t,'to')]);if(tripSig[t.id]!==sig){tripSig[t.id]=sig;delete tripRes[t.id];todo.push(t)}}
+  todo.forEach(loadTrip);renderTrips()}
+async function loadTrip(t){const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'journeys',from:tEnd(t,'from'),to:tEnd(t,'to')}});
+  tripRes[t.id]=error||data?.error?{list:tripRes[t.id]?.list||[],err:true}:{list:data.journeys||[],err:false};renderTrips()}
+// Every minute while the Bus tab shows; every 5 minutes otherwise.
+async function loadTrips(force){if(!hh||!trips.length)return;if(!force&&tab!=='bus'&&Date.now()-tripAt<5*6e4)return;
+  tripAt=Date.now();await Promise.all(trips.map(loadTrip))}
+function renderTrips(){const el=$('#trips');if(!el||!hh)return;
+  if(!trips.length){el.innerHTML='<p class="empty">Save the trips you make often, like Office, University or School, to see when to leave and when you’ll arrive.</p><button type="button" class="btn" data-trip-add style="margin-top:8px">+ Add a trip</button>';return}
+  const n=now();
+  el.innerHTML=trips.map(t=>{const r=tripRes[t.id],w=(+t.walk_min||0)*6e4;
+    const js=(r?.list||[]).map(j=>({...j,leaveAt:new Date(new Date(j.dep)-w)})).map(j=>({...j,leave:Math.round((j.leaveAt-n)/6e4)})).filter(j=>j.leave>=-1).slice(0,trips.length<3?3:2);
+    const nx=js.find(j=>!j.cancelled);
+    const lv=!nx?'':nx.leave<=0?'Leave now':nx.leave<60?`Leave in ${nx.leave} min`:'Leave '+hm(nx.leaveAt);
+    const rows=js.map(j=>{const ld=late(j.dep,j.depPlanned),la=late(j.arr,j.arrPlanned),dur=Math.max(0,Math.round((new Date(j.arr)-new Date(j.dep))/6e4));
+      const chain=(j.steps||[]).map(s=>s.walk!=null?`<span class="wk" title="Walk ${s.walk} min">🚶${s.walk}</span>`:lineTag(s)).join('');
+      const ride=(j.steps||[]).find(s=>s.walk==null);
+      const det=j===nx&&ride?`<p class="jd">${w?`Leave home ${hm(j.leaveAt)} · `:''}${esc(MODE[ride.mode]||'')} ${esc(ride.line)} from ${esc(ride.from)}${ride.platform?', platform '+esc(ride.platform):''} at ${hm(ride.dep)}${ride.dir?' towards '+esc(ride.dir):''}</p>`:'';
+      return `<div class="jr${j.cancelled?' gone':''}"><span class="jt"><b${ld?' class="lt"':''}>${hm(j.dep)}</b> – <b${la?' class="lt"':''}>${hm(j.arr)}</b>${ld||la?`<s>${hm(j.depPlanned)} – ${hm(j.arrPlanned)}</s>`:''}</span><span class="chain">${chain}</span><span class="dur">${j.cancelled?'Cancelled':dur+' min'}</span>${det}</div>`}).join('');
+    const body=rows||`<p class="empty" style="padding-left:46px">${!r?'Looking up connections…':r.err?'Live trips unavailable right now.':'No connections found right now.'}</p>`;
+    return `<div class="trip"><div class="trip-h"><button type="button" class="tn" data-trip="${esc(t.id)}" aria-label="Edit trip ${esc(t.name)}"><span class="ti">${esc(t.icon||'📍')}</span><span style="min-width:0"><b>${esc(t.name)}</b><small>${esc(t.from_name)} → ${esc(t.to_name)}</small></span></button>${lv?`<span class="lv${nx.leave<=5?' soon':''}">${lv}</span>`:''}</div>${body}${r?.err&&rows?'<p class="note" style="padding-left:46px">Live trips unavailable right now — showing the last times.</p>':''}</div>`}).join('')}
+
+const TPRE=[['🏢','Office'],['🎓','University'],['🏫','School'],['⚽','Training'],['🛒','Shopping'],['👵','Grandma']];
+const TICON={stoparea:'🚏',address:'🏠',pointofinterest:'📍',metastation:'🚏'};
+const S=k=>k==='from'?'From':'To';
+$('#tripPre').innerHTML=TPRE.map(([i,n])=>`<button type="button" data-i="${i}" data-n="${n}">${i} ${n}</button>`).join('');
+$('#tripPre').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#tIcon').value=b.dataset.i;$('#tName').value=b.dataset.n};
+function drawTripEnds(){for(const k of['from','to']){const p=tripDraft[k];$(`#t${S(k)}Cur`).textContent=p?(TICON[p.type]||(p.gid?'🚏':'📍'))+' '+p.name:k==='from'?'Not chosen yet.':'Search for a stop, an address or a place.'}}
+function openTrip(t){tripEditing=t||null;$('#tripH').textContent=t?'Edit trip':'Add trip';
+  const end=s=>({name:t[s+'_name'],gid:t[s+'_gid'],lat:t[s+'_lat'],lon:t[s+'_lon']});
+  tripDraft=t?{from:end('from'),to:end('to')}:{from:hh.vt_gid?{name:hh.vt_stop||'Home stop',gid:hh.vt_gid,type:'stoparea'}:null,to:null};
+  $('#tIcon').value=t?.icon||'';$('#tName').value=t?.name||'';$('#tWalk').value=t?.walk_min??0;
+  for(const k of['from','to']){$(`#t${S(k)}Q`).value='';$(`#t${S(k)}Res`).innerHTML=''}
+  msg($('#tMsg'),'');$('#tDel').style.display=t?'':'none';drawTripEnds();$('#ovTrip').classList.add('on');$('#tName').focus()}
+async function findTripPlace(k){const q=$(`#t${S(k)}Q`).value.trim(),res=$(`#t${S(k)}Res`);if(q.length<2)return;res.innerHTML='<p class="msg">Searching…</p>';
+  const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'search',q,any:true}});
+  if(error||data?.error){res.innerHTML='<p class="msg err">Search isn’t working right now.</p>';return}
+  tripFound[k]=data.results||[];
+  res.innerHTML=tripFound[k].length?tripFound[k].map((r,i)=>`<button type="button" class="btn" data-i="${i}">${TICON[r.type]||'📍'} ${esc(r.name)}</button>`).join(''):'<p class="msg">Nothing found.</p>'}
+for(const k of['from','to']){
+  $(`#t${S(k)}Q`).onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();findTripPlace(k)}};
+  $(`#t${S(k)}Res`).onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;tripDraft[k]=tripFound[k][+b.dataset.i];$(`#t${S(k)}Res`).innerHTML='';drawTripEnds()}}
+$('#fTrip').querySelectorAll('[data-tfind]').forEach(b=>b.onclick=()=>findTripPlace(b.dataset.tfind));
+$('#tripAdd').onclick=()=>openTrip();
+$('#trips').onclick=e=>{if(e.target.closest('[data-trip-add]'))return openTrip();const b=e.target.closest('[data-trip]');if(b){const t=trips.find(x=>x.id===b.dataset.trip);if(t)openTrip(t)}};
+$('#fTrip').onsubmit=async e=>{e.preventDefault();const name=$('#tName').value.trim();if(!name)return;
+  const{from,to}=tripDraft;if(!from||!to)return msg($('#tMsg'),'Choose where the trip starts and where it goes.',true);
+  const end=(s,p)=>({[s+'_name']:String(p.name).slice(0,80),[s+'_gid']:p.gid||null,[s+'_lat']:p.gid?null:p.lat,[s+'_lon']:p.gid?null:p.lon});
+  const row={household_id:hh.id,name,icon:$('#tIcon').value.trim()||'📍',walk_min:Math.min(60,Math.max(0,parseInt($('#tWalk').value,10)||0)),...end('from',from),...end('to',to)};
+  if(!tripEditing)row.sort=trips.reduce((m,t)=>Math.max(m,t.sort+1),0);
+  $('#tSave').disabled=true;msg($('#tMsg'),'');
+  const{data,error}=await(tripEditing?sb.from('trips').update(row).eq('id',tripEditing.id):sb.from('trips').insert(row)).select().single();
+  $('#tSave').disabled=false;if(error)return msg($('#tMsg'),errText(error),true);
+  $('#ovTrip').classList.remove('on');const i=trips.findIndex(x=>x.id===data.id);setTrips(i<0?[...trips,data]:trips.map(x=>x.id===data.id?data:x));applyTab()};
+$('#tDel').onclick=async()=>{if(!tripEditing)return;const id=tripEditing.id;$('#ovTrip').classList.remove('on');setTrips(trips.filter(t=>t.id!==id));
+  const{error}=await sb.from('trips').delete().eq('id',id);if(error){status('Couldn’t delete: '+errText(error));refetch()}};
 
 // Open-Meteo weather codes → words and an icon (night versions when the sun is down).
 const wxWord=c=>c===0?'Clear':c===1?'Mostly clear':c===2?'Partly cloudy':c===3?'Cloudy':c<=48?'Fog':c<=57?'Drizzle':c<=67?'Rain':c<=77?'Snow':c<=82?'Showers':c<=86?'Snow showers':'Thunder';
@@ -658,7 +761,7 @@ document.addEventListener('click',wake);document.addEventListener('visibilitycha
 // Every box lives on one tab; the defaults fill a landscape tablet (about 8 rows under the header).
 const COLS=12,LYK='fhd.layout2';
 const WDEF={today:{tab:'today',x:0,y:0,w:6,h:8,mw:3,mh:2},soon:{tab:'today',x:6,y:0,w:6,h:5,mw:3,mh:2},rems:{tab:'today',x:6,y:5,w:6,h:3,mw:3,mh:2},
-  bus:{tab:'bus',x:0,y:0,w:12,h:8,mw:3,mh:3},tasks:{tab:'tasks',x:0,y:0,w:12,h:8,mw:3,mh:3},rw:{tab:'rw',x:0,y:0,w:12,h:8,mw:3,mh:2},
+  bus:{tab:'bus',x:0,y:0,w:5,h:8,mw:3,mh:3},trips:{tab:'bus',x:5,y:0,w:7,h:8,mw:4,mh:3},tasks:{tab:'tasks',x:0,y:0,w:12,h:8,mw:3,mh:3},rw:{tab:'rw',x:0,y:0,w:12,h:8,mw:3,mh:2},
   wxw:{tab:'wx',x:0,y:0,w:12,h:5,mw:4,mh:3}};
 const board=$('#board'),wEls=()=>[...board.querySelectorAll('.wgt')],wEl=id=>board.querySelector(`.wgt[data-w="${id}"]`);
 const narrow=matchMedia('(max-width:699px)'),calm=matchMedia('(prefers-reduced-motion: reduce)');
@@ -673,6 +776,8 @@ function settle(list,leadId,down){const L=list.map(b=>({...b})),lead=L.find(b=>b
   const K=new Map(L.map(b=>[b,key(b)]));L.sort((a,b)=>K.get(a)-K.get(b)||a.x-b.x);
   const out=[];for(const b of L){b.y=0;for(let c;(c=out.find(o=>hit(o,b)));)b.y=c.y+c.h;out.push(b)}return out}
 function loadLayout(){let s=[];try{s=JSON.parse(localStorage.getItem(LYK)||'[]')}catch(e){}if(!Array.isArray(s))s=[];
+  // Saved before Trips existed: give the Bus tab its new default so Trips sits beside the departures.
+  if(s.some(b=>b?.id==='bus')&&!s.some(b=>b?.id==='trips'))s=s.filter(b=>b?.id!=='bus');
   const all=Object.keys(WDEF).map(id=>fit({...WDEF[id],...(s.find(b=>b&&b.id===id)||{}),id}));
   return[...new Set(Object.values(WDEF).map(d=>d.tab))].flatMap(t=>settle(all.filter(b=>WDEF[b.id].tab===t)))}
 let layout=loadLayout(),arranging=false,drag=null,cellRows=0;
@@ -755,7 +860,7 @@ function applyTab(){if(!tabOk(tab))tab=rot.order.find(tabOk)||'today';
   $('#tabs').querySelectorAll('[data-tab]').forEach(b=>{const on=b.dataset.tab===tab;b.hidden=!tabOk(b.dataset.tab);b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1});
   wEls().forEach(e=>{e.hidden=WDEF[e.dataset.w].tab!==tab||(e.dataset.w==='rw'&&rOff)});
   applyLayout()}
-function setTab(id,focus){if(!tabOk(id))return;tab=id;try{localStorage.setItem(TBK,id)}catch(e){}applyTab();if(focus)$('#tab-'+id).focus()}
+function setTab(id,focus){if(!tabOk(id))return;tab=id;if(id==='bus'&&Date.now()-tripAt>6e4)loadTrips(true);try{localStorage.setItem(TBK,id)}catch(e){}applyTab();if(focus)$('#tab-'+id).focus()}
 $('#tabs').onclick=e=>{const b=e.target.closest('[data-tab]');if(b)setTab(b.dataset.tab)};
 // Left/right arrow keys move between tabs.
 $('#tabs').onkeydown=e=>{const d={ArrowLeft:-1,ArrowRight:1}[e.key];if(!d)return;e.preventDefault();
@@ -771,7 +876,7 @@ let rotT=0,rotHeld=0;
 const rotCan=()=>rot.on&&!narrow.matches&&!!hh&&!$('#vBoard').hidden;
 function tabHasContent(id){const t=ymd(now()),lim=ymd(new Date(Date.now()+14*864e5));
   if(id==='today')return items.some(i=>i.type==='reminder'||(i.type==='event'&&i.date>=t&&i.date<=lim));
-  if(id==='bus')return !!hh?.vt_gid&&bus.list.length>0;
+  if(id==='bus')return (!!hh?.vt_gid&&bus.list.length>0)||trips.length>0;
   if(id==='tasks')return items.some(i=>i.type==='task');
   if(id==='rw')return !rOff&&rwPeople().length>0;
   if(id==='wx')return !!wx;
@@ -820,7 +925,7 @@ $('#rotOn').onchange=e=>{rot.on=e.target.checked;rotHeld=0;rotChanged()};
 $('#rotIdle').onchange=e=>{rot.idle=Math.min(600,Math.max(10,parseInt(e.target.value,10)||60));e.target.value=rot.idle;saveRot()};
 
 /* ---------- go ---------- */
-applyTheme();tick();applyScreen();setInterval(()=>{tick();renderBus();applyTheme();applyScreen();sizeRows()},15000);
+applyTheme();tick();applyScreen();setInterval(()=>{tick();renderBus();renderTrips();applyTheme();applyScreen();sizeRows()},15000);
 let lastDay=ymd(now());setInterval(()=>{if(ymd(now())!==lastDay){lastDay=ymd(now());render()}},6e4);
 // ---------- auto-update ----------
 // The deploy workflow stamps BUILD and writes version.txt. Every 2 minutes the page checks

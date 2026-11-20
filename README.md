@@ -20,6 +20,7 @@ supabase/
 - **Bus times**: the app calls the `vasttrafik` server function, which logs in to Västtrafik with *your* key, looks up departures and caches them for 20 seconds. The key never reaches the browser, and only signed-in users can call it.
 - **Weather**: Open-Meteo, free, no key.
 - **Reward notes**: kids earn notes for things on their chart (chores, habits, learning) and spend them on rewards. Tap a child's balance on the display to earn or spend; each child can star one reward to save up for, and it shows as a progress bar. *Edit chart* changes what's on it; *History* shows recent notes, lets you undo one, and give a bonus or take notes away. Each thing to earn can be limited to once a day or once a week; the server checks the limit and that there are enough notes before anything is spent.
+- **Arrange the board**: tap *Arrange* to move boxes around the 12-column grid and drag a box's corner to resize it (each box has a smallest size so its content stays readable). Boxes float up to fill gaps and push others aside. The layout is saved on each device, so the wall tablet and a laptop can differ; *Reset layout* goes back to the default. On phones the boxes stack in one column in the same order. Keyboard: arrow keys move the focused box, Shift+arrows resize.
 
 ## Setup (about 20 minutes)
 

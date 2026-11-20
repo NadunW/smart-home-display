@@ -13,12 +13,19 @@ button{cursor:pointer;border:0;background:none;min-height:44px;border-radius:12p
 button:disabled{opacity:.5;cursor:default}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 [hidden]{display:none!important}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 32px;padding:20px max(2.5vw,16px) 8px}
+/* Top bar: date and buttons. Header below: clock, today's weather and the hourly forecast. */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px max(2.5vw,16px) 0}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px;padding:6px max(2.5vw,16px) 8px}
 .clock{font-size:clamp(64px,9vw,120px);font-weight:600;line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.date{font-size:22px;font-weight:500}.date small{display:block;color:var(--mute);font-size:16px;font-weight:400}
-.wx{display:flex;align-items:center;gap:10px;margin-left:auto}.wx b{font-size:44px;font-weight:600;line-height:1}.wx span{color:var(--mute);font-size:15px;line-height:1.3}
-.count{background:var(--acc);color:#fff;border-radius:16px;padding:10px 16px;font-weight:500;font-size:17px}.count b{font-size:28px;display:block;line-height:1.05}
-.tools{display:flex;gap:8px}#thBtn{min-width:44px;padding:0 12px;font-size:20px}
+.date{font-size:22px;font-weight:600}.date small{color:var(--mute);font-size:18px;font-weight:400;margin-left:8px}
+.wx{display:flex;align-items:center;gap:12px}.wx .ic{font-size:56px;line-height:1}.wx b{font-size:60px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.wx span{color:var(--mute);font-size:15px;line-height:1.35}.wx span em{color:var(--ink);font-style:normal;font-size:18px;font-weight:500}
+.fc{flex:1 1 340px;display:flex;overflow-x:auto;scrollbar-width:none;background:var(--card);border-radius:18px;padding:6px}
+.fc>div{flex:1 0 58px;display:grid;justify-items:center;gap:1px;padding:4px 2px;font-variant-numeric:tabular-nums}
+.fc small{color:var(--mute);font-size:14px}.fc i{font-style:normal;font-size:26px;line-height:1.2}.fc b{font-size:19px;font-weight:600}
+.fc .p{font-size:13px;color:light-dark(#1f6fc4,#6cb4ff);min-height:18px}.fc .nd{border-left:1px solid var(--line)}
+.count{background:var(--acc);color:#fff;border-radius:999px;padding:6px 16px;font-weight:500;font-size:17px;display:flex;align-items:baseline;gap:8px}.count b{font-size:22px;line-height:1.1}
+.tools{display:flex;gap:8px;margin-left:auto}#thBtn{min-width:44px;padding:0 12px;font-size:20px}
 .btn{background:var(--card);padding:0 16px;font-weight:500}.btn.pri{background:var(--ink);color:var(--bg)}
 .card{background:var(--card);border-radius:22px;padding:18px 20px}
 h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
@@ -104,7 +111,7 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 @keyframes pop{50%{transform:scale(1.25)}}.pop{animation:pop .5s}
 /* Phones: one column in the same order as the board, each box as tall as its content. */
 @media(max-width:699px){.grid{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto}.wgt{grid-column:auto;grid-row:auto;order:var(--o,0);overflow:visible}.wb{overflow:visible}#arrBtn{display:none}}
-@media(max-width:640px){.wx{margin-left:0}header{gap:12px 20px}.clock{font-size:64px}.tools{width:100%}.tools .pri{flex:1}}
+@media(max-width:640px){header{gap:12px 20px}.clock{font-size:64px}.wx b{font-size:48px}.wx .ic{font-size:44px}.fc{flex-basis:100%}.tools{width:100%;margin-left:0}.tools .pri{flex:1}}
 body,.card,.dlg{transition:background-color .8s,color .8s}
 body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;pointer-events:none;z-index:20}
 @media(prefers-reduced-motion:reduce){.bar i,body,.card,.dlg{transition:none}.pop{animation:none}}
@@ -142,12 +149,15 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
 
 <!-- Display -->
 <div id="vBoard" hidden>
-<header>
-  <div class="clock" data-clock>--:--</div>
+<div class="top">
   <div class="date" id="date"></div>
-  <div class="wx" id="wx"></div>
   <div id="count"></div>
   <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="arrBtn" aria-pressed="false">Arrange</button><button class="btn" id="thBtn" aria-label="Switch to dark" title="Switch to dark">☾</button><button class="btn" id="setBtn">Settings</button></div>
+</div>
+<header>
+  <div class="clock" data-clock>--:--</div>
+  <div class="wx" id="wx"></div>
+  <div class="fc" id="fc" aria-label="Forecast for the coming hours" hidden></div>
 </header>
 <div class="arr" id="arrBar" hidden><span>Drag a box to move it. Drag its corner to make it bigger or smaller. Saved on this device.</span><button type="button" class="btn" id="arrReset">Reset layout</button><button type="button" class="btn pri" id="arrDone">Done</button></div>
 <main class="grid" id="board">
@@ -348,12 +358,25 @@ async function loadBus(){if(!hh?.vt_gid){renderBus();return}
   const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'departures',gid:hh.vt_gid}});
   if(error||data?.error)bus={list:bus.list,err:'Live times unavailable right now.'};else bus={list:data.departures||[],err:''};renderBus()}
 
-function renderWx(){if(!hh)return;if(!hh.lat||!wx){$('#wx').innerHTML=hh.lat?'':'<span>Set your town in Settings<br>to see the weather</span>';return}
-  const c=wx.code,w=c===0?'Clear':c<=2?'Partly cloudy':c===3?'Cloudy':c<=48?'Fog':c<=57?'Drizzle':c<=67?'Rain':c<=77?'Snow':c<=82?'Showers':c<=86?'Snow showers':'Thunder';
-  $('#wx').innerHTML=`<b>${Math.round(wx.t)}°</b><span>${esc(w)} · ${esc(hh.place||'')}<br>${Math.round(wx.hi)}° / ${Math.round(wx.lo)}°</span>`}
+// Open-Meteo weather codes → words and an icon (night versions when the sun is down).
+const wxWord=c=>c===0?'Clear':c===1?'Mostly clear':c===2?'Partly cloudy':c===3?'Cloudy':c<=48?'Fog':c<=57?'Drizzle':c<=67?'Rain':c<=77?'Snow':c<=82?'Showers':c<=86?'Snow showers':'Thunder';
+const wxIcon=(c,day)=>c<=1?(day?'☀️':'🌙'):c===2?(day?'⛅':'☁️'):c===3?'☁️':c<=48?'🌫️':c<=57?'🌦️':c<=67?'🌧️':c<=77?'🌨️':c<=82?(day?'🌦️':'🌧️'):c<=86?'🌨️':'⛈️';
+function renderWx(){if(!hh)return;const fc=$('#fc');
+  if(!hh.lat||!wx){$('#wx').innerHTML=hh.lat?'':'<span>Set your town in Settings<br>to see the weather</span>';fc.hidden=true;return}
+  $('#wx').innerHTML=`<span class="ic" aria-hidden="true">${wxIcon(wx.code,wx.day)}</span><b>${Math.round(wx.t)}°</b><span><em>${esc(wxWord(wx.code))}</em><br>Feels ${Math.round(wx.feel)}° · ${Math.round(wx.wind)} m/s<br>${Math.round(wx.hi)}° / ${Math.round(wx.lo)}°${wx.rain>=20?' · 💧'+wx.rain+'%':''}${hh.place?' · '+esc(hh.place):''}</span>`;
+  // The rest of today, hour by hour (every 2 hours if that's a lot); late in the evening it runs on into tomorrow morning.
+  const d=now(),key=ymd(d)+'T'+pad(d.getHours()),i0=wx.hours.findIndex(h=>h.time.slice(0,13)>key);
+  let next=i0<0?[]:wx.hours.slice(i0);const todayN=next.filter(h=>h.time.startsWith(ymd(d))).length;
+  next=todayN>=6?next.slice(0,todayN):next.slice(0,8);const step=next.length>9?2:1;next=next.filter((_,i)=>i%step===0);
+  fc.hidden=!next.length;let last=ymd(d);
+  fc.innerHTML=next.map(h=>{const nd=!h.time.startsWith(last);last=h.time.slice(0,10);
+    return `<div${nd?' class="nd"':''}><small>${nd?esc(new Date(h.time.slice(0,10)+'T12:00').toLocaleDateString('en-GB',{weekday:'short'}))+' ':''}${h.time.slice(11,13)}</small><i title="${esc(wxWord(h.code))}">${wxIcon(h.code,h.day)}</i><b>${Math.round(h.t)}°</b><span class="p">${h.p>=20?h.p+'%':''}</span></div>`}).join('')}
 async function loadWeather(){if(!hh?.lat){wx=null;renderWx();return}
-  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${hh.lat}&longitude=${hh.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto&forecast_days=1`);
-    if(!r.ok)throw 0;const j=await r.json();wx={t:j.current.temperature_2m,code:j.current.weather_code,hi:j.daily.temperature_2m_max[0],lo:j.daily.temperature_2m_min[0]};
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${hh.lat}&longitude=${hh.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&wind_speed_unit=ms&timezone=auto&forecast_days=2`);
+    if(!r.ok)throw 0;const j=await r.json(),H=j.hourly;
+    wx={t:j.current.temperature_2m,feel:j.current.apparent_temperature,code:j.current.weather_code,wind:j.current.wind_speed_10m,day:!!j.current.is_day,
+      hi:j.daily.temperature_2m_max[0],lo:j.daily.temperature_2m_min[0],rain:j.daily.precipitation_probability_max?.[0]??0,
+      hours:H.time.map((t,i)=>({time:t,t:H.temperature_2m[i],code:H.weather_code[i],p:H.precipitation_probability?.[i]??0,day:!!H.is_day[i]}))};
     const ri=new Date(j.daily.sunrise[0]),se=new Date(j.daily.sunset[0]);if(!isNaN(ri)&&!isNaN(se)){sun={rise:ri,set:se};try{localStorage.setItem('fhd.sun',JSON.stringify({rise:ri.getHours()*60+ri.getMinutes(),set:se.getHours()*60+se.getMinutes()}))}catch(e){}}}catch(e){}renderWx();applyTheme()}
 
 /* ---------- add / edit ---------- */

@@ -89,7 +89,7 @@ h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
   .dep{grid-template-columns:76px minmax(0,1fr) auto;gap:18px;padding:14px 0}.dep .line{font-size:24px;padding:8px 0}
   .dep .d{font-size:26px}.dep .d small{font-size:18px}.dep .m{font-size:34px}
   #tasks{columns:2 300px;column-gap:32px}#tasks .big{column-span:all}#tasks .who{break-inside:avoid;margin:0 0 14px}
-  .rwc{column-width:220px;column-gap:22px}
+  .rwc{column-width:calc(220px*var(--rs,1));column-gap:22px}
 }
 .note{font-size:13px;color:var(--mute);margin:8px 0 0}
 /* Trips: saved trips with when to leave, when you arrive and the lines on the way. */
@@ -135,12 +135,12 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 .dlg.wide{width:min(1100px,100%);max-height:94vh;display:flex;flex-direction:column;overflow:hidden}#rwBody{overflow:auto;flex:1;margin:0 -6px;padding:0 6px 6px}
 .rwk .bal small{display:inline}
 /* The chart on the Rewards tab: tap a row to earn, tap a reward to spend (asks first). */
-.rwc{columns:auto 200px;column-gap:16px;margin:2px 0 6px}.rwg{padding-bottom:4px}.rwg h4{break-after:avoid}.rwi{break-inside:avoid}
-.rwg h4{font-size:13px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 0;padding:0 6px}
-.rwi{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;min-height:42px;padding:2px 6px;border-radius:12px;text-align:left;font-size:16px;line-height:1.2}
+.rwc{columns:auto calc(200px*var(--rs,1));column-gap:16px;margin:2px 0 6px}.rwg{padding-bottom:4px}.rwg h4{break-after:avoid}.rwi{break-inside:avoid}
+.rwg h4{font-size:calc(13px*var(--rs,1));font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 0;padding:0 6px}
+.rwi{display:grid;grid-template-columns:calc(28px*var(--rs,1)) minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;min-height:calc(42px*var(--rs,1));padding:2px 6px;border-radius:12px;text-align:left;font-size:calc(16px*var(--rs,1));line-height:1.2}
 .rwi:active{background:color-mix(in srgb,var(--c) 20%,transparent)}
-.rwi .ic{font-size:22px;text-align:center;line-height:1}
-.rwi .pr{font-weight:700;font-size:14px;border-radius:999px;padding:3px 10px;white-space:nowrap;background:var(--c);color:#fff;font-variant-numeric:tabular-nums}
+.rwi .ic{font-size:calc(22px*var(--rs,1));text-align:center;line-height:1}
+.rwi .pr{font-weight:700;font-size:calc(14px*var(--rs,1));border-radius:999px;padding:3px calc(10px*var(--rs,1));white-space:nowrap;background:var(--c);color:#fff;font-variant-numeric:tabular-nums}
 .rwi.done{color:var(--mute)}.rwi.done .pr{background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--mute)}
 .rwi.sp .pr{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--c)}
 .rwi.cant{color:var(--mute)}.rwi.cant .pr{box-shadow:inset 0 0 0 2px var(--line);color:var(--mute)}
@@ -284,6 +284,7 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
   <div class="pick" id="sPlaceRes"></div><p class="msg" id="sPlaceCur"></p>
   <h2 style="margin:8px 0 0">Display</h2>
   <label>Theme<select id="sTheme"><option value="sun">Automatic: dark from sunset to sunrise</option><option value="device">Follow this device’s setting</option><option value="light">Always light</option><option value="dark">Always dark</option></select></label>
+  <label>Reward chart size<select id="sRwSize"><option value="auto">Automatic: as big as fits without scrolling</option><option value="1">Small</option><option value="1.25">Medium</option><option value="1.5">Large</option></select></label>
   <p class="msg" style="margin:0">Saved on this device only, so the wall tablet and phones can each have their own. The ☀/☾ button at the top switches straight to always light or always dark.</p>
   <h2 style="margin:8px 0 0">Tabs</h2>
   <label class="ckrow"><input type="checkbox" id="rotOn"> Change tabs by themselves, like a slideshow</label>
@@ -586,7 +587,19 @@ function renderRewards(){if(rOff)return;const kids=rwPeople();
     return '<div class="rwc">'+groups.map(([k,c,l])=>`<div class="rwg"><h4>${k==='spend'?'🎁 ':''}${esc(c||(k==='spend'?'Rewards':'Earn notes'))}</h4>${l.map(i=>row(i,p)).join('')}</div>`).join('')+'</div>'};
   $('#rw').innerHTML=kids.map(p=>{const b=bal(p.id),t=rLog.filter(l=>l.person_id===p.id&&l.day===today()&&l.notes>0).reduce((s,l)=>s+l.notes,0),g=goalOf(p);
     return `<div class="rwp"><button class="rwk" data-rw="${esc(p.id)}"><span class="av" style="background:${esc(p.color)}">${esc(p.name[0]||'?')}</span><span><b>${esc(p.name)}</b><small>${t?'+'+t+' today · ':''}Tap for history, bonus & edit</small></span><span class="bal">${b}<small> notes</small></span></button>`+
-      (g?`<div class="goal"><span>${esc(g.icon||'★')} Saving for ${esc(g.title)}</span><span>${b>=g.notes?'Ready!':Math.max(b,0)+' / '+g.notes}</span></div><div class="bar"><i style="width:${Math.min(100,Math.max(0,b)/g.notes*100)}%;background:${esc(p.color)}"></i></div>`:'')+chart(p)+'</div>'}).join('')}
+      (g?`<div class="goal"><span>${esc(g.icon||'★')} Saving for ${esc(g.title)}</span><span>${b>=g.notes?'Ready!':Math.max(b,0)+' / '+g.notes}</span></div><div class="bar"><i style="width:${Math.min(100,Math.max(0,b)/g.notes*100)}%;background:${esc(p.color)}"></i></div>`:'')+chart(p)+'</div>'}).join('');fitRw()}
+// Chart size on the Rewards tab (Settings → Display, per device). Automatic picks the biggest size
+// that fits the box without scrolling, never smaller than Small (rows stay at least 42px to tap).
+const RSK='fhd.rwsize',rwSizePref=()=>{try{return localStorage.getItem(RSK)||'auto'}catch(e){return'auto'}};
+function fitRw(){const el=$('#rw'),pref=rwSizePref(),set=v=>el.style.setProperty('--rs',v);
+  if(pref!=='auto')return set(pref);
+  if(innerWidth<700||!el.clientHeight||!el.querySelector('.rwc'))return set(1);
+  const fits=v=>{set(v);return el.scrollHeight<=el.clientHeight+1};
+  if(!fits(1))return;let lo=1,hi=1.7;if(fits(hi))return;
+  for(let k=0;k<6;k++){const m=(lo+hi)/2;if(fits(m))lo=m;else hi=m}set(Math.floor(lo*100)/100)}
+let rwFitW=0,rwFitH=0;
+try{new ResizeObserver(()=>{const el=$('#rw');if(el.clientWidth===rwFitW&&el.clientHeight===rwFitH)return;rwFitW=el.clientWidth;rwFitH=el.clientHeight;fitRw()}).observe($('#rw'))}catch(e){}
+$('#sRwSize').onchange=e=>{try{localStorage.setItem(RSK,e.target.value)}catch(err){}fitRw()};
 function openRw(pid,tab){const list=rwPeople().length?rwPeople():people;rw.pid=pid||rw.pid;if(!list.some(k=>k.id===rw.pid))rw.pid=list[0]?.id||null;if(!rw.pid)return;
   rw.tab=tab||'earn';rw.edit=false;rw.confirm=null;rwSeen=Date.now();$('#ovRw').classList.add('on');drawRw()}
 function drawRw(){const list=rwPeople().length?rwPeople():people,p=person(rw.pid);if(!p){$('#ovRw').classList.remove('on');return}
@@ -682,7 +695,7 @@ function openSet(welcome){draft={people:people.map(p=>({...p})),gid:hh.vt_gid,st
   if(welcome&&!draft.people.length)draft.people.push({name:'',color:PAL[0]});
   $('#setWelcome').hidden=!welcome;$('#sName').value=hh.name;drawMems();$('#sStopQ').value='';$('#sStopRes').innerHTML='';$('#sPlaceQ').value='';$('#sPlaceRes').innerHTML='';
   $('#sStopCur').textContent=draft.stop?'Current stop: '+draft.stop:'No stop chosen yet.';$('#sPlaceCur').textContent=draft.place?'Current town: '+draft.place:'No town chosen yet.';
-  $('#sTheme').value=themePref();drawRot();fillScreenSettings();$('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
+  $('#sTheme').value=themePref();$('#sRwSize').value=rwSizePref();drawRot();fillScreenSettings();$('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
 $('#setBtn').onclick=()=>openSet(false);
 $('#mems').oninput=e=>{const t=e.target;if(t.dataset.mi!=null)draft.people[t.dataset.mi].name=t.value;if(t.dataset.mc!=null)draft.people[t.dataset.mc].color=t.value};
 $('#mems').onclick=e=>{const i=e.target.closest('[data-mr]')?.dataset.mr;if(i!=null){draft.people.splice(+i,1);drawMems()}};

@@ -7,7 +7,7 @@ function openSet(welcome){draft={people:people.map(p=>({...p})),gid:hh.vt_gid,st
   if(welcome&&!draft.people.length)draft.people.push({name:'',color:PAL[0]});
   $('#setWelcome').hidden=!welcome;$('#sName').value=hh.name;drawMems();$('#sStopQ').value='';$('#sStopRes').innerHTML='';$('#sPlaceQ').value='';$('#sPlaceRes').innerHTML='';
   $('#sStopCur').textContent=draft.stop?'Current stop: '+draft.stop:'No stop chosen yet.';$('#sPlaceCur').textContent=draft.place?'Current town: '+draft.place:'No town chosen yet.';
-  $('#sTheme').value=themePref();$('#sRwSize').value=rwSizePref();drawRot();fillScreenSettings();$('#sCode').textContent=hh.join_code;msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
+  $('#sTheme').value=themePref();$('#sRwSize').value=rwSizePref();drawRot();fillScreenSettings();$('#sCode').textContent=hh.join_code;drawG();msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
 $('#setBtn').onclick=()=>openSet(false);
 $('#mems').oninput=e=>{const t=e.target;if(t.dataset.mi!=null)draft.people[t.dataset.mi].name=t.value;if(t.dataset.mc!=null)draft.people[t.dataset.mc].color=t.value};
 $('#mems').onclick=e=>{const i=e.target.closest('[data-mr]')?.dataset.mr;if(i!=null){draft.people.splice(+i,1);drawMems()}};

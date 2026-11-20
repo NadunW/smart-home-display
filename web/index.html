@@ -68,6 +68,7 @@
   <div class="row"><label>Date<input type="date" id="fDate"></label><label>Time<input type="time" id="fTime"></label></div>
   <label id="lRep">Repeats<select id="fRep"><option value="none">Once</option><option value="daily">Every day</option><option value="weekly">Every week</option></select></label>
   <label id="lCount" style="display:flex;align-items:center;gap:10px;color:var(--ink)"><input type="checkbox" id="fCount" style="min-height:0;width:22px;height:22px"> Show a countdown on the display</label>
+  <p class="msg" id="fGNote" hidden></p>
   <div class="acts"><button type="button" class="btn danger" id="fDel">Delete</button><button type="button" class="btn" data-close>Cancel</button><button class="btn pri">Save</button></div>
 </form></div>
 
@@ -138,6 +139,13 @@
     <label>Dimmed brightness<input type="range" id="scDim" min="1" max="60" style="padding:0"></label>
     <p class="msg" id="scNow" role="status"></p>
   </div>
+  <div id="gSet" style="display:grid;gap:10px">
+    <h2 style="margin:8px 0 0">Google Calendar</h2>
+    <p class="msg" style="margin:0">Each person can connect their own Google account. Their appointments show here, and appointments and reminders added here for them go into their Google Calendar. Connect from a phone or computer browser: Google doesn’t allow signing in inside the wall-tablet app.</p>
+    <div id="gList" style="display:grid;gap:12px"></div>
+    <div class="find"><select id="gWho" aria-label="Whose Google account"></select><button type="button" class="btn" id="gConnect">Connect Google Calendar</button></div>
+    <p class="msg" id="gMsg" role="status"></p>
+  </div>
   <h2 style="margin:8px 0 0">Invite family members</h2>
   <p class="msg" style="margin:0">They create their own account, choose “Join family” and type this code:</p>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span class="code" id="sCode"></span><button type="button" class="btn" id="sNewCode">New code</button></div>
@@ -158,6 +166,7 @@
 <script src="js/add.js?v=dev"></script>
 <script src="js/rewards.js?v=dev"></script>
 <script src="js/settings.js?v=dev"></script>
+<script src="js/gcal.js?v=dev"></script>
 <script src="js/theme.js?v=dev"></script>
 <script src="js/screen.js?v=dev"></script>
 <script src="js/layout.js?v=dev"></script>

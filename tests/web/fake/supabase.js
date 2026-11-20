@@ -1,7 +1,7 @@
 // A stand-in for supabase-js, served in place of the CDN script during tests.
 // It keeps the family's data in memory (and in sessionStorage, so it survives a reload)
 // and answers the same calls the page makes: tables, database functions, auth,
-// realtime and the vasttrafik server function.
+// realtime and the vasttrafik and google server functions.
 //
 // Tests set the starting data with window.__FAKE_SEED (see ../harness.js) and can look
 // at window.__fake.state and window.__fake.calls afterwards.
@@ -11,7 +11,7 @@
   try { state = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) { state = null; }
   if (!state) state = JSON.parse(JSON.stringify(window.__FAKE_SEED || {}));
   state.db ||= {};
-  for (const t of ['households', 'household_users', 'people', 'items', 'reward_items', 'reward_log', 'trips']) state.db[t] ||= [];
+  for (const t of ['households', 'household_users', 'people', 'items', 'reward_items', 'reward_log', 'trips', 'google_accounts']) state.db[t] ||= [];
   state.users ||= [];
   state.fail ||= {};
   state.vt ||= {};
@@ -73,6 +73,7 @@
     eq(c, v) { this.filters.push(r => r[c] === v); return this; }
     in(c, vs) { this.filters.push(r => vs.includes(r[c])); return this; }
     gte(c, v) { this.filters.push(r => r[c] >= v); return this; }
+    is(c, v) { this.filters.push(r => (r[c] ?? null) === v); return this; }
     order(c, o = {}) { this.orders.push([c, o.ascending !== false]); return this; }
     limit(n) { this.max = n; return this; }
     single() { this.one = true; return this; }
@@ -201,6 +202,21 @@
     return { data: { error: 'unknown action' }, error: null };
   }
 
+  // ---------- google server function ----------
+  // Answers like the real one without Google: connect hands back a sign-in address, the rest say ok.
+  // disconnect removes the account and what came from it, like the server does.
+  function google(body) {
+    const f = failure('google.' + body.action);
+    if (f) return { data: null, error: f };
+    if (body.action === 'connect') return { data: { url: 'https://accounts.google.test/signin?person=' + (body.person_id || '') }, error: null };
+    if (body.action === 'disconnect') {
+      state.db.items = state.db.items.filter(i => !(i.gcal_account === body.account && !i.created_by));
+      state.db.google_accounts = state.db.google_accounts.filter(a => a.id !== body.account); save();
+    }
+    if (body.action === 'sync') return { data: { accounts: state.db.google_accounts.length, errors: [] }, error: null };
+    return { data: { ok: true }, error: null };
+  }
+
   function createClient() {
     return {
       from: t => new Query(t),
@@ -212,7 +228,7 @@
         try { const data = RPC[name](args); save(); return { data: clone(data), error: null }; }
         catch (e) { return { data: null, error: e.message ? e : err(String(e)) }; }
       },
-      functions: { async invoke(name, { body }) { calls.push({ kind: 'fn', name, body: clone(body) }); await later(); return vasttrafik(body); } },
+      functions: { async invoke(name, { body }) { calls.push({ kind: 'fn', name, body: clone(body) }); await later(); return name === 'google' ? google(body) : vasttrafik(body); } },
       auth,
       channel() { const ch = { on: () => ch, subscribe: cb => { setTimeout(() => cb && cb('SUBSCRIBED'), 0); return ch; } }; return ch; },
       removeChannel() {},

@@ -5,14 +5,14 @@ function setKind(k){kind=k;document.querySelectorAll('#kind button').forEach(b=>
 function openAdd(it){editing=it||null;$('#addH').textContent=it?'Edit':'Add';
   $('#fWho').innerHTML='<option value="">Everyone</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
   setKind(it?.type||kind);$('#fTitle').value=it?.title||'';$('#fWho').value=it?.person_id||'';$('#fDate').value=it?it.date||'':ymd(now());$('#fTime').value=it?.time||'';
-  $('#fRep').value=it?.repeat||'none';$('#fCount').checked=!!it?.countdown;$('#fDel').style.display=it?'':'none';$('#ovAdd').classList.add('on');$('#fTitle').focus()}
+  $('#fRep').value=it?.repeat||'none';$('#fCount').checked=!!it?.countdown;$('#fDel').style.display=it?'':'none';const ga=gOf(it);$('#fGNote').hidden=!ga;if(ga)$('#fGNote').textContent=`In ${ga.email}’s Google Calendar: changes and Delete go there too.`;$('#ovAdd').classList.add('on');$('#fTitle').focus()}
 $('#addBtn').onclick=()=>openAdd();
 $('#kind').onclick=e=>{const b=e.target.closest('button');if(b)setKind(b.dataset.k)};
 $('#fAdd').onsubmit=e=>{e.preventDefault();const title=$('#fTitle').value.trim();if(!title)return;
   const it={...(editing||{id:'tmp'+Date.now(),done:false,done_on:null}),type:kind,title,person_id:$('#fWho').value||null,date:$('#fDate').value,time:$('#fTime').value,repeat:kind==='task'?$('#fRep').value:'none',countdown:kind==='event'&&$('#fCount').checked};
   if(editing&&editing.type==='task'&&(editing.repeat!==it.repeat||kind!=='task')){it.done=false;it.done_on=null}
   $('#ovAdd').classList.remove('on');saveItem(it)};
-$('#fDel').onclick=()=>{if(editing)removeItem(editing.id);$('#ovAdd').classList.remove('on')};
+$('#fDel').onclick=()=>{if(editing)removeItem(editing.id,true);$('#ovAdd').classList.remove('on')};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.ov').classList.remove('on'));
 document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('on')});
 $('#vBoard').addEventListener('click',e=>{const tg=e.target.closest('[data-toggle]'),ed=e.target.closest('[data-edit]');

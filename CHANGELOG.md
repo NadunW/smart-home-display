@@ -10,6 +10,9 @@ when they were merged.
 ### Display
 - The reward chart grows to fill the Rewards tab: the fewer things on it, the bigger the rows. Settings → Display → *Reward chart size* can set it to Small, Medium or Large on each screen instead (#19).
 
+### Hosting
+- Every change is now checked automatically before it can be merged: the page, the bus-time server, the database updates and the Android app are tested first, so a broken change can't reach the display (#20).
+
 ## 1.0.4 — 2026-11-20
 
 ### Display

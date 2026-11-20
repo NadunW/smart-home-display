@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.5 — 2026-11-20
+
+### Display
+- The reward chart grows to fill the Rewards tab: the fewer things on it, the bigger the rows. Settings → Display → *Reward chart size* can set it to Small, Medium or Large on each screen instead (#19).
+
 ## 1.0.4 — 2026-11-20
 
 ### Display

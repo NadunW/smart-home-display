@@ -694,11 +694,11 @@ let lastDay=ymd(now());setInterval(()=>{if(ymd(now())!==lastDay){lastDay=ymd(now
 // The deploy workflow stamps BUILD and writes version.txt. Every 2 minutes the page checks
 // version.txt; when a new version is out it refreshes the cached files and reloads, but only
 // while nobody is in the middle of something (a dialog, Arrange, typing).
-const BUILD='__BUILD__',BUILD_NO='__BUILD_NO__',BUILT='__BUILT__';
-// Footer, right side: "Version 42 · updated today 09:51". Hidden on a local copy (no stamp).
-function showVersion(){if(BUILD_NO.startsWith('__'))return;const d=new Date(BUILT);if(isNaN(d))return;
+const BUILD='__BUILD__',VER='__VER__',BUILT='__BUILT__';
+// Footer, right side: "Version 1.4.12 · updated today 09:51". Hidden on a local copy (no stamp).
+function showVersion(){if(VER.startsWith('__'))return;const d=new Date(BUILT);if(isNaN(d))return;
   const hm=pad(d.getHours())+':'+pad(d.getMinutes()),day=dayLabel(ymd(d));
-  $('#ver').textContent=`Version ${BUILD_NO} · updated ${/^(Today|Yesterday)$/.test(day)?day.toLowerCase():day} ${hm}`;
+  $('#ver').textContent=`Version ${VER} · updated ${/^(Today|Yesterday)$/.test(day)?day.toLowerCase():day} ${hm}`;
   $('#ver').title='Build '+BUILD.slice(0,7)}
 showVersion();setInterval(showVersion,6e4);
 const busy=()=>arranging||!!document.querySelector('.ov.on')||/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'');

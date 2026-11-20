@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "web/**"
+      - "VERSION"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -26,6 +27,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # full history, to count changes for the patch number
 
       - uses: actions/configure-pages@v6
 
@@ -33,8 +36,14 @@ jobs:
       - name: Stamp build version
         run: |
           printf '%s' "$GITHUB_SHA" > web/version.txt
+          # Version is MAJOR.MINOR from the VERSION file, plus PATCH = changes to web/ on main
+          # since VERSION last changed (a merged PR counts once). Edit VERSION to bump; patch restarts at 0.
+          BASE=$(git log -1 --format=%H -- VERSION)
+          PATCH=$(git rev-list --count --first-parent "$BASE"..HEAD -- web)
+          VER="$(tr -d '[:space:]' < VERSION).$PATCH"
           BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          sed -i "s/const BUILD='__BUILD__',BUILD_NO='__BUILD_NO__',BUILT='__BUILT__'/const BUILD='$GITHUB_SHA',BUILD_NO='$GITHUB_RUN_NUMBER',BUILT='$BUILT'/" web/index.html
+          echo "Version $VER"
+          sed -i "s/const BUILD='__BUILD__',VER='__VER__',BUILT='__BUILT__'/const BUILD='$GITHUB_SHA',VER='$VER',BUILT='$BUILT'/" web/index.html
           grep -q "const BUILD='$GITHUB_SHA'" web/index.html
 
       - uses: actions/upload-pages-artifact@v5

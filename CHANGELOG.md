@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.4 — 2026-11-20
+
+### Display
+- The Rewards tab shows the whole chart: tap a chore or habit to earn its notes straight away (Undo in the message), tap a reward to spend (it asks first). Done ones get a ✓, rewards you can't afford yet are greyed out and the one being saved for has a ★. Tap the name for history, bonus and *Edit chart* (#18).
+
 ## 1.0.3 — 2026-11-20
 
 ### Display

@@ -89,7 +89,7 @@ h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
   .dep{grid-template-columns:76px minmax(0,1fr) auto;gap:18px;padding:14px 0}.dep .line{font-size:24px;padding:8px 0}
   .dep .d{font-size:26px}.dep .d small{font-size:18px}.dep .m{font-size:34px}
   #tasks{columns:2 300px;column-gap:32px}#tasks .big{column-span:all}#tasks .who{break-inside:avoid;margin:0 0 14px}
-  #rw:has(.rwp){columns:2 320px;column-gap:32px}#rw .rwp{break-inside:avoid;padding-bottom:8px}
+  .rwc{column-width:220px;column-gap:22px}
 }
 .note{font-size:13px;color:var(--mute);margin:8px 0 0}
 /* Trips: saved trips with when to leave, when you arrive and the lines on the way. */
@@ -134,6 +134,17 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 .goal{font-size:14px;color:var(--mute);display:flex;justify-content:space-between;gap:8px;margin:2px 0 4px}
 .dlg.wide{width:min(1100px,100%);max-height:94vh;display:flex;flex-direction:column;overflow:hidden}#rwBody{overflow:auto;flex:1;margin:0 -6px;padding:0 6px 6px}
 .rwk .bal small{display:inline}
+/* The chart on the Rewards tab: tap a row to earn, tap a reward to spend (asks first). */
+.rwc{columns:auto 200px;column-gap:16px;margin:2px 0 6px}.rwg{padding-bottom:4px}.rwg h4{break-after:avoid}.rwi{break-inside:avoid}
+.rwg h4{font-size:13px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 0;padding:0 6px}
+.rwi{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;min-height:42px;padding:2px 6px;border-radius:12px;text-align:left;font-size:16px;line-height:1.2}
+.rwi:active{background:color-mix(in srgb,var(--c) 20%,transparent)}
+.rwi .ic{font-size:22px;text-align:center;line-height:1}
+.rwi .pr{font-weight:700;font-size:14px;border-radius:999px;padding:3px 10px;white-space:nowrap;background:var(--c);color:#fff;font-variant-numeric:tabular-nums}
+.rwi.done{color:var(--mute)}.rwi.done .pr{background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--mute)}
+.rwi.sp .pr{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--c)}
+.rwi.cant{color:var(--mute)}.rwi.cant .pr{box-shadow:inset 0 0 0 2px var(--line);color:var(--mute)}
+.rwi.goal .pr{background:var(--c);color:#fff;box-shadow:none}
 .rwtop{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}.rwtop .bal{margin-left:auto;font-size:40px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .tw{position:relative}
@@ -566,9 +577,16 @@ const goalOf=p=>{const g=p?.goal_item&&rItems.find(i=>i.id===p.goal_item);return
 const dayLabel=d=>d===today()?'Today':d===ymd(new Date(Date.now()-864e5))?'Yesterday':new Date(d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 function renderRewards(){if(rOff)return;const kids=rwPeople();
   if(!kids.length){$('#rw').innerHTML=people.length?`<p class="empty" style="margin-bottom:10px">Kids earn notes for chores and good habits, then spend them on rewards.</p><div class="find"><select id="rwSeedWho" aria-label="Who the chart is for">${people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select><button type="button" class="btn pri" id="rwSeed">Start with the example chart</button></div><button type="button" class="btn" id="rwOwn" style="margin-top:8px">Or build your own</button>`:'<p class="empty">Open Settings to add the people in your family.</p>';return}
+  const row=(i,p)=>{const b=bal(p.id),earn=i.kind==='earn',done=earn&&doneFor(i,p.id),cant=!earn&&b<i.notes,goal=p.goal_item===i.id;
+    const pr=earn?(done?'✓':'+'+i.notes):(goal?'★ ':'')+i.notes;
+    return `<button type="button" class="rwi${earn?'':' sp'}${done?' done':''}${cant?' cant':''}${goal?' goal':''}" data-ri="${esc(i.id)}" data-pid="${esc(p.id)}" style="--c:${esc(p.color)}" aria-label="${esc(i.title)}: ${earn?(done?'done '+(i.per==='week'?'this week':'today'):'earn '+i.notes+' notes'):'costs '+i.notes+' notes'}"><span class="ic">${esc(i.icon||(earn?'⭐':'🎁'))}</span><span>${esc(i.title)}</span><span class="pr">${pr}</span></button>`};
+  // Earn groups first, then rewards, in chart order; each group is one column block.
+  const chart=p=>{const mine=rItems.filter(i=>forPid(i,p.id));if(!mine.length)return '<p class="empty">Nothing on the chart yet. Tap the name, then “Edit chart”.</p>';
+    const groups=[];for(const k of['earn','spend'])for(const c of[...new Set(mine.filter(i=>i.kind===k).map(i=>i.category||''))])groups.push([k,c,mine.filter(i=>i.kind===k&&(i.category||'')===c)]);
+    return '<div class="rwc">'+groups.map(([k,c,l])=>`<div class="rwg"><h4>${k==='spend'?'🎁 ':''}${esc(c||(k==='spend'?'Rewards':'Earn notes'))}</h4>${l.map(i=>row(i,p)).join('')}</div>`).join('')+'</div>'};
   $('#rw').innerHTML=kids.map(p=>{const b=bal(p.id),t=rLog.filter(l=>l.person_id===p.id&&l.day===today()&&l.notes>0).reduce((s,l)=>s+l.notes,0),g=goalOf(p);
-    return `<div class="rwp"><button class="rwk" data-rw="${esc(p.id)}"><span class="av" style="background:${esc(p.color)}">${esc(p.name[0]||'?')}</span><span><b>${esc(p.name)}</b><small>${t?'+'+t+' today · ':''}Tap to earn or spend</small></span><span class="bal">${b}<small> notes</small></span></button>`+
-      (g?`<div class="goal"><span>${esc(g.icon||'★')} Saving for ${esc(g.title)}</span><span>${b>=g.notes?'Ready!':Math.max(b,0)+' / '+g.notes}</span></div><div class="bar"><i style="width:${Math.min(100,Math.max(0,b)/g.notes*100)}%;background:${esc(p.color)}"></i></div>`:'')+'</div>'}).join('')}
+    return `<div class="rwp"><button class="rwk" data-rw="${esc(p.id)}"><span class="av" style="background:${esc(p.color)}">${esc(p.name[0]||'?')}</span><span><b>${esc(p.name)}</b><small>${t?'+'+t+' today · ':''}Tap for history, bonus & edit</small></span><span class="bal">${b}<small> notes</small></span></button>`+
+      (g?`<div class="goal"><span>${esc(g.icon||'★')} Saving for ${esc(g.title)}</span><span>${b>=g.notes?'Ready!':Math.max(b,0)+' / '+g.notes}</span></div><div class="bar"><i style="width:${Math.min(100,Math.max(0,b)/g.notes*100)}%;background:${esc(p.color)}"></i></div>`:'')+chart(p)+'</div>'}).join('')}
 function openRw(pid,tab){const list=rwPeople().length?rwPeople():people;rw.pid=pid||rw.pid;if(!list.some(k=>k.id===rw.pid))rw.pid=list[0]?.id||null;if(!rw.pid)return;
   rw.tab=tab||'earn';rw.edit=false;rw.confirm=null;rwSeen=Date.now();$('#ovRw').classList.add('on');drawRw()}
 function drawRw(){const list=rwPeople().length?rwPeople():people,p=person(rw.pid);if(!p){$('#ovRw').classList.remove('on');return}
@@ -591,6 +609,9 @@ function drawRw(){const list=rwPeople().length?rwPeople():people,p=person(rw.pid
     (rw.tab==='spend'&&mine.length&&!rw.edit?'<p class="note">Tap ☆ to save up for a reward. It shows on the display.</p>':'')+
     (rw.edit?`<div class="tiles" style="margin-top:12px"><button type="button" class="tile" id="riNew"><span class="ic">＋</span><span>${rw.tab==='earn'?'Add a way to earn':'Add a reward'}</span></button></div>`:'')}
 $('#rw').onclick=e=>{const k=e.target.closest('[data-rw]');if(k)return openRw(k.dataset.rw);
+  const r=e.target.closest('[data-ri]');if(r){const it=rItems.find(i=>i.id===r.dataset.ri),pid=r.dataset.pid;if(!it)return;
+    if(it.kind==='earn'){if(doneFor(it,pid))return toast(`Already done ${it.per==='week'?'this week':'today'}. Well done!`);return rwAct('earn',it.id,pid)}
+    const b=bal(pid);if(b<it.notes)return toast(`${it.notes-Math.max(b,0)} more notes to go. Keep going!`);openRw(pid,'spend');rw.confirm=it.id;return drawRw()}
   const sd=e.target.closest('#rwSeed');if(sd){sd.disabled=true;return seed($('#rwSeedWho').value)}
   if(e.target.closest('#rwOwn')){openRw($('#rwSeedWho')?.value);rw.edit=true;drawRw()}};
 $('#ovRw').addEventListener('pointerdown',()=>rwSeen=Date.now());
@@ -604,11 +625,11 @@ $('#rwBody').onclick=e=>{if(e.target.closest('#riNew'))return openRi(null);
   const it=rItems.find(i=>i.id===t.dataset.ri);if(!it)return;if(rw.edit)return openRi(it);
   if(it.kind==='earn'){if(doneFor(it,rw.pid))return toast(`Already done ${it.per==='week'?'this week':'today'}. Well done!`);rwAct('earn',it.id)}
   else{const b=bal(rw.pid);if(b<it.notes)return toast(`${it.notes-Math.max(b,0)} more notes to go. Keep going!`);rw.confirm=it.id;drawRw()}};
-async function rwAct(k,id){if(rwBusy)return;rwBusy=true;const pid=rw.pid,p=person(pid);
+async function rwAct(k,id,pid=rw.pid){if(rwBusy)return;rwBusy=true;const p=person(pid);
   const{data,error}=await sb.rpc(k==='earn'?'reward_earn':'reward_spend',{p_item:id,p_person:pid,p_day:today()});rwBusy=false;
   if(error)return toast(errText(error));
   rLog.unshift(data);rBal[pid]=bal(pid)+data.notes;render();
-  const el=$('#rwBal');el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+  for(const el of[$('#ovRw').classList.contains('on')&&$('#rwBal'),$(`#rw [data-rw="${CSS.escape(pid)}"] .bal`)])if(el){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
   toast(k==='earn'?`+${data.notes} notes for ${p?.name||''} 🎉`:`Enjoy! ${data.icon||''} ${data.title}`,data.id);refetch()}
 async function undo(id){const l=rLog.find(x=>x.id===id);if(!l)return;hideToast();rLog=rLog.filter(x=>x.id!==id);rBal[l.person_id]=bal(l.person_id)-l.notes;render();
   const{error}=await sb.from('reward_log').delete().eq('id',id);if(error)toast('Couldn’t undo: '+errText(error));refetch()}

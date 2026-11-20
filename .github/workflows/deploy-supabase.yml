@@ -24,6 +24,8 @@ jobs:
       DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       VT_CLIENT_ID: ${{ secrets.VT_CLIENT_ID }}
       VT_CLIENT_SECRET: ${{ secrets.VT_CLIENT_SECRET }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
     steps:
       - uses: actions/checkout@v7
 
@@ -57,5 +59,15 @@ jobs:
           supabase secrets set --remote="$PROJECT_REF" --yes \
             VT_CLIENT_ID="$VT_CLIENT_ID" VT_CLIENT_SECRET="$VT_CLIENT_SECRET"
 
+      - name: Set Google Calendar secrets
+        if: env.GOOGLE_CLIENT_ID != '' && env.GOOGLE_CLIENT_SECRET != ''
+        run: |
+          supabase secrets set --remote="$PROJECT_REF" --yes \
+            GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET"
+
       - name: Deploy server functions
-        run: supabase functions deploy vasttrafik --remote="$PROJECT_REF" --use-api --yes
+        run: |
+          supabase functions deploy vasttrafik --remote="$PROJECT_REF" --use-api --yes
+          # Google sends the browser back to this function after sign-in, without a Supabase
+          # login, so it checks logins itself instead of the gateway doing it.
+          supabase functions deploy google --remote="$PROJECT_REF" --use-api --no-verify-jwt --yes

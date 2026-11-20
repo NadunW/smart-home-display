@@ -5,6 +5,14 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.8 — 2026-11-20
+
+### Display
+- Google Calendar: everyone can connect their own Google account in Settings → Google Calendar. Their appointments show on the display, and appointments and reminders added on the display for them go into their Google Calendar. Changes and deletions go both ways (#24).
+
+### Server
+- New `google` server function that signs in with Google, keeps everyone's calendars in step with the display and holds the Google keys, so they never reach the browser (#24).
+
 ## 1.0.7 — 2026-11-20
 
 ### Display

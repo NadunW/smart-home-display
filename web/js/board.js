@@ -8,10 +8,11 @@ const row=it=>({household_id:hh.id,type:it.type,title:it.title,person_id:it.pers
 const isTmp=id=>String(id).startsWith('tmp');
 async function saveItem(it){const i=items.findIndex(x=>x.id===it.id);i<0?items.push(it):items[i]=it;render();
   if(isTmp(it.id)){const{data,error}=await sb.from('items').insert(row(it)).select().single();
-    if(error)status('Couldn’t save: '+errText(error));else{const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=norm(data);render()}}
-  else{const{error}=await sb.from('items').update(row(it)).eq('id',it.id);if(error)status('Couldn’t save: '+errText(error))}
+    if(error)status('Couldn’t save: '+errText(error));else{const j=items.findIndex(x=>x.id===it.id);const saved=norm(data);if(j>=0)items[j]=saved;render();await gPush(saved)}}
+  else{const{error}=await sb.from('items').update(row(it)).eq('id',it.id);if(error)status('Couldn’t save: '+errText(error));else await gPush(it)}
   refetch()}
-async function removeItem(id){if(isTmp(id))return;items=items.filter(x=>x.id!==id);render();const{error}=await sb.from('items').delete().eq('id',id);if(error)status('Couldn’t delete: '+errText(error));refetch()}
+// fromGoogle: also delete it from the Google Calendar it's in (Delete in the dialog; not when a reminder is ticked off).
+async function removeItem(id,fromGoogle){if(isTmp(id))return;const it=items.find(x=>x.id===id);items=items.filter(x=>x.id!==id);render();if(fromGoogle&&it)await gRemove(it);const{error}=await sb.from('items').delete().eq('id',id);if(error)status('Couldn’t delete: '+errText(error));refetch()}
 
 /* ---------- render ---------- */
 function tick(){const d=now(),t=pad(d.getHours())+':'+pad(d.getMinutes());document.querySelectorAll('[data-clock]').forEach(c=>c.textContent=t);

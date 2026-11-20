@@ -12,6 +12,7 @@ tests/web/                   behaviour tests: the page in a browser with a fake 
 supabase/
   migrations/                database, access rules, create/join family (applied in order)
   functions/vasttrafik/      server function that holds the Västtrafik key
+  functions/google/          server function for Google Calendar sign-in and sync
 ```
 
 ## How it works
@@ -23,6 +24,7 @@ supabase/
 - **Bus times**: the app calls the `vasttrafik` server function, which logs in to Västtrafik with *your* key, looks up departures and caches them for 20 seconds. The key never reaches the browser, and only signed-in users can call it.
 - **Trips**: the Bus tab has a *Trips* box next to the departures, like the saved trips in the Västtrafik app. Tap *+ Trip*, pick Office, University, School… (or type your own name and icon), choose where it starts (your home stop to begin with) and where it goes: a stop, an address or a place. Each trip shows *Leave in X min*, the next connections with departure → arrival time, delays (late times in orange, the timetable time struck through), cancellations, travel time and the lines and walks on the way, plus the line, stop and platform for the first one. *Minutes to walk* makes the countdown about leaving the house. Tap a trip's name to change or delete it. Trips are shared by the family and sync live; times refresh every minute while the Bus tab shows (every 5 minutes otherwise) and the server caches each trip for 30 seconds. Uses the same Planera Resa v4 key (`journeys` action in the `vasttrafik` function; table in `20261120120000_trips.sql`).
 - **Weather**: Open-Meteo, free, no key.
+- **Google Calendar**: each family member can connect their own Google account in **Settings → Google Calendar**, and pick whose dot their appointments get and which of their calendars show. Their appointments (from two days ago to two months ahead) appear in *Today* and *Coming up*; an event both parents can see shows once. Appointments and reminders added on the display for that person go into the calendar they chose (*New appointments … go to*), and changes and *Delete* go both ways. Ticking off a reminder only takes it off the display. Tasks stay on the display. All talking to Google happens in the `google` server function: the tokens are stored in a table the browser can't read, and the display asks the server to re-read the calendars every 5 minutes (each account at most every 90 seconds, however many screens ask). Connect from a phone or computer browser: Google doesn't allow its sign-in inside embedded app browsers like the Android wall app. *Disconnect* removes what came from that Google account from the display and withdraws the display's access; the Google Calendar itself is untouched. Multi-day events show on their first day. Setup: step 6 below.
 - **Reward notes**: kids earn notes for things on their chart (chores, habits, learning) and spend them on rewards. Tap a child's balance on the display to earn or spend; each child can star one reward to save up for, and it shows as a progress bar. *Edit chart* changes what's on it; *History* shows recent notes, lets you undo one, and give a bonus or take notes away. Each thing to earn can be limited to once a day or once a week; the server checks the limit and that there are enough notes before anything is spent.
 - **Screen layout**: the header holds the clock and date, the current weather, the countdown and the buttons. Next to the tabs, a ticker scrolls through the next departures (tap it for the Bus tab). The footer shows *Synced* and the version. In between, the body shows one tab at a time: **Today** (today's appointments, coming up, reminders), **Bus**, **Tasks**, **Rewards** and **Weather** (hourly forecast and tomorrow). Tap a tab to switch; the last tab is remembered on each device. Left/right arrow keys also switch tabs.
 - **Slideshow**: on the tablet (anything wider than a phone) the tabs change by themselves, and a thin bar under the tabs fills up while each one shows. Tabs with nothing on them (no bus stop, no tasks, …) are skipped. A tap anywhere holds the current tab for a minute; so does an open dialog, *Arrange* or typing. *⏸ Pause* next to the tabs stops it on that device until *▶ Play*. **Settings → Tabs** turns it on or off and sets which tabs show, their order, how many seconds each stays up (Today and Bus 20 s, Tasks and Rewards 15 s, Weather 10 s to start) and how long a tap holds it. Saved per device; phones never change tabs by themselves.
@@ -62,6 +64,7 @@ Add these under **Repo → Settings → Secrets and variables → Actions → Ne
 | `SUPABASE_PROJECT_REF` | the 20-letter id in your project URL (`https://<ref>.supabase.co`) |
 | `SUPABASE_DB_PASSWORD` | the database password you chose when creating the project |
 | `VT_CLIENT_ID` / `VT_CLIENT_SECRET` | your Västtrafik app (optional; skip if you set them in the dashboard) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | your Google OAuth client (step 6; optional, skip if you set them in the dashboard) |
 
 If the migration step fails with an IPv6 error, add a `SUPABASE_DB_URL` secret instead, set to the **Session pooler** connection string from the project's **Connect** button. The workflow uses it when it's present.
 
@@ -69,6 +72,8 @@ Migration files are named by the version Supabase records (`<timestamp>_<name>.s
 
 If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn't run it again:
 `supabase migration repair --status applied <version> --remote=<ref> --password <db-password>`.
+
+The workflow deploys both server functions: `vasttrafik` (with *Verify JWT* on) and `google` (with it off, see step 6).
 
 ### 4. Host the app
 
@@ -90,6 +95,16 @@ If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn'
 - **Android**: Fully Kiosk Browser (or Chrome → *Add to home screen*) and keep the charger in.
 - **iPad**: Safari → Share → *Add to Home Screen*, then Guided Access to lock it to the app. Set Auto-Lock to Never.
 - The app also asks the browser to keep the screen awake after the first tap.
+
+### 6. Google Calendar (optional, about 15 minutes)
+1. Go to **console.cloud.google.com**, create a project (e.g. *Family display*) and, under **APIs & Services → Library**, enable the **Google Calendar API**.
+2. **APIs & Services → OAuth consent screen** (Google Auth Platform): choose **External**, fill in the app name and your email. Under **Data access** add the scopes `…/auth/calendar.readonly` and `…/auth/calendar.events`.
+3. Under **Audience**, press **Publish app** so the status is **In production**. Leave it there: in *Testing*, Google signs everyone out of the display again after 7 days. You don't need Google's verification for a family; each person just sees a *Google hasn't verified this app* screen once and taps **Advanced → Go to … (unsafe)**. Unverified apps are limited to 100 people.
+4. **Clients → Create client → Web application**. Under **Authorised redirect URIs** add exactly
+   `https://<your-project-ref>.supabase.co/functions/v1/google`. Copy the client ID and secret.
+5. Put them in Supabase: Edge Functions → **Secrets** → `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (or as GitHub secrets, step 3b).
+6. Deploy the `google` function. The workflow does it. By hand: dashboard → *Deploy a new function* → name `google` → paste `supabase/functions/google/index.ts` → then turn **Verify JWT** **off** for it (Google's redirect back has no Supabase login, so the function checks logins itself). With the CLI: `supabase functions deploy google --no-verify-jwt`.
+7. On a phone, open the display's address in the browser, sign in, **Settings → Google Calendar**, pick who it's for and tap **Connect Google Calendar**. Tick **both** calendar boxes on Google's page.
 
 ## Android wall app
 

@@ -18,7 +18,7 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 32px;padding:20
 .date{font-size:22px;font-weight:500}.date small{display:block;color:var(--mute);font-size:16px;font-weight:400}
 .wx{display:flex;align-items:center;gap:10px;margin-left:auto}.wx b{font-size:44px;font-weight:600;line-height:1}.wx span{color:var(--mute);font-size:15px;line-height:1.3}
 .count{background:var(--acc);color:#fff;border-radius:16px;padding:10px 16px;font-weight:500;font-size:17px}.count b{font-size:28px;display:block;line-height:1.05}
-.tools{display:flex;gap:8px}
+.tools{display:flex;gap:8px}#thBtn{min-width:44px;padding:0 12px;font-size:20px}
 .btn{background:var(--card);padding:0 16px;font-weight:500}.btn.pri{background:var(--ink);color:var(--bg)}
 .card{background:var(--card);border-radius:22px;padding:18px 20px}
 h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
@@ -147,7 +147,7 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
   <div class="date" id="date"></div>
   <div class="wx" id="wx"></div>
   <div id="count"></div>
-  <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="arrBtn" aria-pressed="false">Arrange</button><button class="btn" id="setBtn">Settings</button></div>
+  <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="arrBtn" aria-pressed="false">Arrange</button><button class="btn" id="thBtn" aria-label="Switch to dark" title="Switch to dark">☾</button><button class="btn" id="setBtn">Settings</button></div>
 </header>
 <div class="arr" id="arrBar" hidden><span>Drag a box to move it. Drag its corner to make it bigger or smaller. Saved on this device.</span><button type="button" class="btn" id="arrReset">Reset layout</button><button type="button" class="btn pri" id="arrDone">Done</button></div>
 <main class="grid" id="board">
@@ -205,7 +205,7 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
   <div class="pick" id="sPlaceRes"></div><p class="msg" id="sPlaceCur"></p>
   <h2 style="margin:8px 0 0">Display</h2>
   <label>Theme<select id="sTheme"><option value="sun">Automatic: dark from sunset to sunrise</option><option value="device">Follow this device’s setting</option><option value="light">Always light</option><option value="dark">Always dark</option></select></label>
-  <p class="msg" style="margin:0">Saved on this device only, so the wall tablet and phones can each have their own.</p>
+  <p class="msg" style="margin:0">Saved on this device only, so the wall tablet and phones can each have their own. The ☀/☾ button at the top switches straight to always light or always dark.</p>
   <div id="screenSet" style="display:grid;gap:10px" hidden>
     <h2 style="margin:8px 0 0">Wall screen</h2>
     <p class="msg" style="margin:0">The screen stays dim and wakes on its own. Leave a time empty to turn that rule off.</p>
@@ -536,9 +536,14 @@ function applyTheme(){const p=themePref();let t='';
   else if(p==='sun'){const w=sunWindow();if(w){const d=now(),m=d.getHours()*60+d.getMinutes();t=m>=w.rise&&m<w.set?'light':'dark'}}
   const root=document.documentElement;if(t){if(root.dataset.theme!==t)root.dataset.theme=t}else delete root.dataset.theme;
   const dark=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
-  $('meta[name=theme-color]').content=dark?'#121116':'#ffffff'}
+  $('meta[name=theme-color]').content=dark?'#121116':'#ffffff';
+  const b=$('#thBtn'),l=dark?'Switch to light':'Switch to dark';b.textContent=dark?'☀':'☾';b.title=l;b.setAttribute('aria-label',l)}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme)}catch(e){}
 $('#sTheme').onchange=e=>{try{localStorage.setItem(THK,e.target.value)}catch(err){}applyTheme()};
+// Quick switch in the header: flips to the opposite of what's showing and keeps it (Always light / Always dark).
+// Settings → Theme goes back to automatic.
+$('#thBtn').onclick=()=>{const t=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  const n=t==='dark'?'light':'dark';try{localStorage.setItem(THK,n)}catch(e){}$('#sTheme').value=n;applyTheme()};
 
 /* ---------- wall screen (Android app only) ---------- */
 // The app exposes window.FamilyDisplay.setBrightness(level). The rules live here because this is

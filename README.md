@@ -95,7 +95,7 @@ If you ran a migration by hand in the SQL Editor, tell the CLI once so it doesn'
 3. Open **Family Display**, sign in, and pick your screen rules in **Settings → Display → Wall screen**.
 4. Optional, for a true kiosk: press Home, choose **Family Display** and *Always*. It then starts by itself after a reboot.
 
-**Screen rules** (per device): bright during the daily bright hours, during bus time on weekday mornings, from a set number of minutes before any appointment or reminder with a time until 10 minutes after it, and for a few minutes after a tap. Otherwise dimmed, and darkest at night. A tap on a dimmed screen only wakes it, so you don't press a button by accident.
+**Screen rules** (per device): bright during the daily bright hours, during bus time on weekday mornings, from a set number of minutes before any appointment or reminder with a time until 10 minutes after it, and for a few minutes after a tap. Otherwise dimmed, and darkest at night. A tap on a dimmed screen only wakes it, so you don't press a button by accident. Moving the *Dimmed brightness* slider shows that level for a couple of seconds, then the screen goes back to what the rules say.
 
 **Hidden menu**: tap the top-left corner five times quickly → reload, Android settings, choose home app, close.
 

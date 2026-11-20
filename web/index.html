@@ -20,10 +20,25 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 32px;padding:20
 .count{background:var(--acc);color:#fff;border-radius:16px;padding:10px 16px;font-weight:500;font-size:17px}.count b{font-size:28px;display:block;line-height:1.05}
 .tools{display:flex;gap:8px}
 .btn{background:var(--card);padding:0 16px;font-weight:500}.btn.pri{background:var(--ink);color:var(--bg)}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr);gap:16px;padding:12px max(2.5vw,16px) 24px}
 .card{background:var(--card);border-radius:22px;padding:18px 20px}
-.col{display:grid;gap:16px;align-content:start}
 h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
+/* Board: 12-column grid; each box has a column, row, width and height in cells (set from JS). */
+.grid{position:relative;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:52px;gap:16px;padding:12px max(2.5vw,16px) 24px}
+.wgt{grid-column:var(--c,1)/span var(--w,4);grid-row:var(--r,1)/span var(--h,4);display:flex;flex-direction:column;position:relative;overflow:hidden;z-index:1}
+.wgt h2{flex:none}
+.wb{flex:1;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;margin:0 -8px;padding:0 8px}
+.cell{grid-column:var(--c)/span 1;grid-row:var(--r)/span 1;border-radius:14px;border:1px dashed var(--line);z-index:0}
+.wph{grid-column:var(--c)/span var(--w);grid-row:var(--r)/span var(--h);border:2px dashed var(--acc);border-radius:22px;background:color-mix(in srgb,var(--acc) 12%,transparent);z-index:1}
+.wcov,.wrs{display:none}
+.arranging .wgt{outline:2px dashed var(--mute);outline-offset:-2px;user-select:none;-webkit-user-select:none}
+.arranging .wcov{display:block;position:absolute;inset:0;z-index:2;cursor:grab;touch-action:none;border-radius:22px}
+.arranging .wcov::after{content:"✥ Move";position:absolute;top:12px;right:14px;font-size:13px;font-weight:600;background:var(--ink);color:var(--bg);border-radius:999px;padding:3px 10px}
+.wcov:focus-visible{outline:3px solid var(--acc);outline-offset:-3px}
+.arranging .wrs{display:block;position:absolute;right:0;bottom:0;width:48px;height:48px;z-index:3;cursor:nwse-resize;touch-action:none}
+.wrs::after{content:"";position:absolute;right:11px;bottom:11px;width:16px;height:16px;border:solid var(--ink);border-width:0 4px 4px 0;border-radius:0 0 6px 0}
+.wgt.drag{z-index:5;box-shadow:0 12px 40px rgb(0 0 0/.3);opacity:.94}.wgt.drag .wcov{cursor:grabbing}
+.arr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:4px max(2.5vw,16px) 0;padding:6px 6px 6px 16px;background:var(--card);border-radius:16px}.arr span{flex:1;color:var(--mute)}
+#arrBtn[aria-pressed=true]{background:var(--ink);color:var(--bg)}
 .ev{display:grid;grid-template-columns:62px 6px minmax(0,1fr);gap:12px;align-items:start;padding:8px 0;border-top:1px solid var(--line);width:100%;text-align:left;min-height:52px;border-radius:0}
 .ev:first-of-type{border-top:0}.ev .t{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ev .dot{width:6px;height:100%;min-height:30px;border-radius:3px}.ev .n{font-size:18px;font-weight:500}.ev .s{color:var(--mute);font-size:14px}
@@ -87,8 +102,9 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:16px;padding:4px 6px 4px 18px;display:flex;gap:8px;align-items:center;font-size:18px;font-weight:500;z-index:15;box-shadow:0 6px 24px rgb(0 0 0/.25);width:max-content;max-width:calc(100% - 32px)}
 .toast span{padding:10px 0}.toast button{color:inherit;text-decoration:underline;padding:0 12px}
 @keyframes pop{50%{transform:scale(1.25)}}.pop{animation:pop .5s}
-@media(max-width:1100px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.mid{grid-column:1/-1;order:-1}}
-@media(max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}.wx{margin-left:0}header{gap:12px 20px}.clock{font-size:64px}.tools{width:100%}.tools .pri{flex:1}}
+/* Phones: one column in the same order as the board, each box as tall as its content. */
+@media(max-width:699px){.grid{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto}.wgt{grid-column:auto;grid-row:auto;order:var(--o,0);overflow:visible}.wb{overflow:visible}#arrBtn{display:none}}
+@media(max-width:640px){.wx{margin-left:0}header{gap:12px 20px}.clock{font-size:64px}.tools{width:100%}.tools .pri{flex:1}}
 body,.card,.dlg{transition:background-color .8s,color .8s}
 body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;pointer-events:none;z-index:20}
 @media(prefers-reduced-motion:reduce){.bar i,body,.card,.dlg{transition:none}.pop{animation:none}}
@@ -131,15 +147,16 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
   <div class="date" id="date"></div>
   <div class="wx" id="wx"></div>
   <div id="count"></div>
-  <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="setBtn">Settings</button></div>
+  <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="arrBtn" aria-pressed="false">Arrange</button><button class="btn" id="setBtn">Settings</button></div>
 </header>
-<main class="grid">
-  <div class="col"><section class="card"><h2>Today</h2><div id="today"></div></section>
-    <section class="card"><h2>Coming up</h2><div id="soon"></div></section></div>
-  <div class="col mid"><section class="card"><h2>Family tasks</h2><div id="tasks"></div></section>
-    <section class="card" id="rwCard" hidden><h2>Reward notes</h2><div id="rw"></div></section></div>
-  <div class="col"><section class="card"><h2 id="busH">Next departures</h2><div id="bus"></div></section>
-    <section class="card"><h2>Reminders</h2><div id="rems"></div></section></div>
+<div class="arr" id="arrBar" hidden><span>Drag a box to move it. Drag its corner to make it bigger or smaller. Saved on this device.</span><button type="button" class="btn" id="arrReset">Reset layout</button><button type="button" class="btn pri" id="arrDone">Done</button></div>
+<main class="grid" id="board">
+  <section class="card wgt" data-w="today"><h2>Today</h2><div class="wb" id="today"></div></section>
+  <section class="card wgt" data-w="soon"><h2>Coming up</h2><div class="wb" id="soon"></div></section>
+  <section class="card wgt" data-w="tasks"><h2>Family tasks</h2><div class="wb" id="tasks"></div></section>
+  <section class="card wgt" data-w="rw" id="rwCard" hidden><h2>Reward notes</h2><div class="wb" id="rw"></div></section>
+  <section class="card wgt" data-w="bus"><h2 id="busH">Next departures</h2><div class="wb" id="bus"></div></section>
+  <section class="card wgt" data-w="rems"><h2>Reminders</h2><div class="wb" id="rems"></div></section>
 </main>
 <p class="status" id="status"></p>
 </div>
@@ -320,7 +337,7 @@ function render(){if(!hh)return;
     :`<p class="empty">${people.length?'No tasks yet. Tap “+ Add” to give someone a chore.':'Open Settings to add the people in your family.'}</p>`;
   const rems=items.filter(i=>i.type==='reminder').sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
   $('#rems').innerHTML=rems.length?rems.map(r=>`<div class="rem"><span class="av" style="background:${esc(colorOf(r.person_id))}">${esc(nameOf(r.person_id)[0])}</span><button class="lbl" data-edit="${esc(r.id)}">${esc(r.title)}<small>${r.date?esc(new Date(r.date+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}))+(r.time?' '+esc(r.time):''):esc(nameOf(r.person_id))}</small></button><button class="ok" data-toggle="${esc(r.id)}" aria-label="Dismiss reminder">✓</button></div>`).join(''):'<p class="empty">No reminders.</p>';
-  renderRewards();if($('#ovRw').classList.contains('on'))drawRw();renderBus();renderWx()}
+  renderRewards();if($('#ovRw').classList.contains('on'))drawRw();renderBus();renderWx();applyLayout()}
 
 function renderBus(){if(!hh)return;$('#busH').textContent='Next departures'+(hh.vt_stop?' · '+hh.vt_stop:'');
   if(!hh.vt_gid){$('#bus').innerHTML='<p class="empty">Choose your stop in Settings.</p>';return}
@@ -558,6 +575,82 @@ for(const[id,k]of Object.entries(SC_FIELDS))$('#'+id).addEventListener('input',e
 /* ---------- keep a wall tablet awake ---------- */
 let lock=null;const wake=async()=>{try{if('wakeLock' in navigator&&!lock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>lock=null)}}catch(e){}};
 document.addEventListener('click',wake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)wake()});
+
+/* ---------- board layout ---------- */
+// The board is a 12-column grid. Each box has a position and size in cells, kept per device (like the theme),
+// so the wall tablet and a laptop can each have their own. Boxes float up to fill gaps and push others
+// down when they would overlap. Phones show one column in the same order.
+const COLS=12,LYK='fhd.layout';
+const WDEF={today:{x:0,y:0,w:4,h:4,mw:3,mh:2},soon:{x:0,y:4,w:4,h:4,mw:3,mh:2},tasks:{x:4,y:0,w:4,h:5,mw:3,mh:3},
+  rw:{x:4,y:5,w:4,h:3,mw:3,mh:2},bus:{x:8,y:0,w:4,h:5,mw:3,mh:3},rems:{x:8,y:5,w:4,h:3,mw:3,mh:2}};
+const board=$('#board'),wEls=()=>[...board.querySelectorAll('.wgt')],wEl=id=>board.querySelector(`.wgt[data-w="${id}"]`);
+const narrow=matchMedia('(max-width:699px)'),calm=matchMedia('(prefers-reduced-motion: reduce)');
+const fit=({id,x,y,w,h})=>{const d=WDEF[id];w=Math.min(COLS,Math.max(d.mw,Math.round(w)||d.w));h=Math.min(40,Math.max(d.mh,Math.round(h)||d.h));
+  return{id,w,h,x:Math.min(COLS-w,Math.max(0,Math.round(x)||0)),y:Math.max(0,Math.round(y)||0)}};
+const hit=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
+// Settle boxes top to bottom, each as high as it fits. The box being moved or resized (lead) keeps its
+// column; a box it overlaps goes first if the lead has moved past that box's middle, otherwise after it.
+function settle(list,leadId,down){const L=list.map(b=>({...b})),lead=L.find(b=>b.id===leadId);
+  const key=b=>{if(!lead)return b.y*2;if(b===lead)return b.y*2-1;if(!hit(b,lead))return b.y*2;
+    const first=down?lead.y+lead.h<=b.y+b.h/2:lead.y<b.y+b.h/2;return first?Math.max(b.y*2,lead.y*2):Math.min(b.y*2,lead.y*2-2)};
+  const K=new Map(L.map(b=>[b,key(b)]));L.sort((a,b)=>K.get(a)-K.get(b)||a.x-b.x);
+  const out=[];for(const b of L){b.y=0;for(let c;(c=out.find(o=>hit(o,b)));)b.y=c.y+c.h;out.push(b)}return out}
+function loadLayout(){let s=[];try{s=JSON.parse(localStorage.getItem(LYK)||'[]')}catch(e){}if(!Array.isArray(s))s=[];
+  return settle(Object.keys(WDEF).map(id=>fit({...WDEF[id],...(s.find(b=>b&&b.id===id)||{}),id})))}
+let layout=loadLayout(),arranging=false,drag=null,cellRows=0;
+const shown=()=>settle(layout.filter(b=>!wEl(b.id).hidden));
+function placeEls(L,from){const anim=arranging&&!calm.matches,els=wEls().filter(e=>!e.hidden);
+  const before=anim?new Map(els.map(e=>[e,from?.el===e?from.rect:e.getBoundingClientRect()])):null,order=[...L].sort((a,b)=>a.y-b.y||a.x-b.x);
+  for(const e of els){const b=L.find(v=>v.id===e.dataset.w);if(!b)continue;const s=e.style;
+    s.setProperty('--c',b.x+1);s.setProperty('--r',b.y+1);s.setProperty('--w',b.w);s.setProperty('--h',b.h);s.setProperty('--o',order.indexOf(b))}
+  if(anim)for(const e of els){if(drag?.el===e&&drag.mode==='move')continue;const a=before.get(e),n=e.getBoundingClientRect(),dx=a.left-n.left,dy=a.top-n.top;
+    if(!dx&&!dy)continue;e.style.transition='none';e.style.transform=`translate(${dx}px,${dy}px)`;void e.offsetWidth;
+    e.style.transition='transform .2s ease';e.style.transform='';e.addEventListener('transitionend',()=>e.style.transition='',{once:true})}
+  drawCells(L)}
+function drawCells(L){const rows=arranging?Math.max(8,...L.map(b=>b.y+b.h))+3:0;if(rows===cellRows)return;cellRows=rows;
+  board.querySelectorAll('.cell').forEach(c=>c.remove());let h='';
+  for(let r=1;r<=rows;r++)for(let c=1;c<=COLS;c++)h+=`<i class="cell" style="--c:${c};--r:${r}"></i>`;board.insertAdjacentHTML('afterbegin',h)}
+function applyLayout(){if(!drag)placeEls(shown())}
+function commit(vis,from){layout=[...vis.map(fit),...layout.filter(b=>!vis.some(v=>v.id===b.id))];
+  try{localStorage.setItem(LYK,JSON.stringify(layout))}catch(e){}placeEls(vis,from)}
+function setArranging(on){arranging=!!on&&!narrow.matches;document.body.classList.toggle('arranging',arranging);$('#arrBar').hidden=!arranging;
+  $('#arrBtn').setAttribute('aria-pressed',arranging);cellRows=-1;applyLayout()}
+wEls().forEach(e=>e.insertAdjacentHTML('beforeend',`<div class="wcov" tabindex="0" role="button" aria-label="${esc(e.querySelector('h2').textContent)}. Drag to move, or use the arrow keys. Shift and arrow keys change the size."></div><div class="wrs" aria-hidden="true"></div>`));
+$('#arrBtn').onclick=()=>setArranging(!arranging);$('#arrDone').onclick=()=>setArranging(false);
+$('#arrReset').onclick=()=>{try{localStorage.removeItem(LYK)}catch(e){}layout=loadLayout();placeEls(shown())};
+narrow.addEventListener('change',()=>{if(narrow.matches)setArranging(false);applyLayout()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&arranging&&!document.querySelector('.ov.on'))setArranging(false)});
+
+// Drag the box to move it, drag the corner to resize. The box follows the finger; a dashed outline
+// shows where it will land, and the others make room as it goes.
+const setPh=b=>{const s=drag.ph.style;s.setProperty('--c',b.x+1);s.setProperty('--r',b.y+1);s.setProperty('--w',b.w);s.setProperty('--h',b.h)};
+function pitch(){const cs=getComputedStyle(board),g=parseFloat(cs.columnGap)||16,rh=parseFloat(cs.gridAutoRows)||52;
+  return{x:(board.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)+g)/COLS,y:rh+g}}
+board.addEventListener('pointerdown',e=>{if(!arranging||drag||e.button>0)return;const h=e.target.closest('.wrs,.wcov');if(!h)return;
+  const el=h.closest('.wgt'),base=shown(),b=base.find(v=>v.id===el.dataset.w);if(!b)return;
+  e.preventDefault();h.setPointerCapture(e.pointerId);
+  drag={el,id:b.id,mode:h.classList.contains('wrs')?'size':'move',pid:e.pointerId,sx:e.clientX,sy:e.clientY,b0:b,base,cur:base,t:b,p:pitch(),ph:null};
+  el.classList.add('drag');if(drag.mode==='move'){drag.ph=document.createElement('div');drag.ph.className='wph';board.appendChild(drag.ph);setPh(b)}});
+board.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.pid)return;const{p,b0,t:o}=drag,d=WDEF[drag.id],dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
+  let t;if(drag.mode==='move'){drag.el.style.transform=`translate(${dx}px,${dy}px)`;
+    t={...b0,x:Math.min(COLS-b0.w,Math.max(0,b0.x+Math.round(dx/p.x))),y:Math.max(0,b0.y+Math.round(dy/p.y))}}
+  else t={...b0,w:Math.min(COLS-b0.x,Math.max(d.mw,b0.w+Math.round(dx/p.x))),h:Math.min(40,Math.max(d.mh,b0.h+Math.round(dy/p.y)))};
+  if(t.x===o.x&&t.y===o.y&&t.w===o.w&&t.h===o.h)return;drag.t=t;
+  drag.cur=settle(drag.base.map(v=>v.id===t.id?t:v),t.id,t.y>b0.y);
+  if(drag.mode==='move'){placeEls(drag.cur.map(v=>v.id===t.id?b0:v));setPh(drag.cur.find(v=>v.id===t.id))}else placeEls(drag.cur)});
+function endDrag(e){if(!drag||e.pointerId!==drag.pid)return;const{el,ph,cur}=drag,rect=el.getBoundingClientRect();
+  el.classList.remove('drag');el.style.transform='';ph?.remove();drag=null;commit(settle(cur),{el,rect})}
+board.addEventListener('pointerup',endDrag);board.addEventListener('pointercancel',endDrag);
+// Keyboard: arrow keys move the focused box one step (up/down hop past the neighbouring box), Shift+arrows resize.
+board.addEventListener('keydown',e=>{const cv=e.target.closest('.wcov'),k={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+  if(!cv||!arranging||!k)return;e.preventDefault();const base=shown(),b={...base.find(v=>v.id===cv.closest('.wgt').dataset.w)},d=WDEF[b.id];
+  const cols=o=>o.id!==b.id&&o.x<b.x+b.w&&b.x<o.x+o.w;
+  if(e.shiftKey){b.w=Math.min(COLS-b.x,Math.max(d.mw,b.w+k[0]));b.h=Math.min(40,Math.max(d.mh,b.h+k[1]))}
+  else if(k[0])b.x=Math.min(COLS-b.w,Math.max(0,b.x+k[0]));
+  else if(k[1]<0){const o=base.filter(o=>cols(o)&&o.y+o.h<=b.y).sort((a,c)=>c.y-a.y)[0];if(!o)return;b.y=Math.max(0,Math.ceil(o.y+o.h/2)-1)}
+  else{const o=base.filter(o=>cols(o)&&o.y>=b.y+b.h).sort((a,c)=>a.y-c.y)[0];if(!o)return;b.y=Math.floor(o.y+o.h/2-b.h)+1}
+  commit(settle(base.map(v=>v.id===b.id?b:v),b.id,k[1]>0))});
+applyLayout();
 
 /* ---------- go ---------- */
 applyTheme();tick();applyScreen();setInterval(()=>{tick();renderBus();applyTheme();applyScreen()},15000);

@@ -44,12 +44,21 @@ const minTxt=m=>m<=0?'Now':m+' min';
 function renderBus(){if(!hh)return;$('#busH').textContent='Next departures'+(hh.vt_stop?' · '+hh.vt_stop:'');const chip=$('#busChip');
   if(!hh.vt_gid){chip.hidden=true;$('#bus').innerHTML='<p class="empty">Choose your stop in Settings.</p>';return}
   const d=now(),rows=bus.list.filter(b=>!b.cancelled).map(b=>({...b,m:Math.round((new Date(b.time)-d)/6e4)})).filter(b=>b.m>=-1).slice(0,8);
-  // Header: the next bus, always on screen. Tap it for the Bus tab.
-  const nx=rows.find(b=>b.m>=0);chip.hidden=!nx;
-  if(nx){chip.innerHTML=`${lineTag(nx)}<span class="d">${esc(nx.dest)}</span><b${nx.m<=5?' class="soon"':''}>${minTxt(nx.m)}</b>`;
-    chip.setAttribute('aria-label',`Next bus: ${nx.line} to ${nx.dest}, ${minTxt(nx.m)}. Show all departures.`)}
+  // Next to the tabs: a ticker of the next departures, always on screen. Tap it for the Bus tab.
+  const nxt=rows.filter(b=>b.m>=0).slice(0,6),nx=nxt[0];chip.hidden=!nx;
+  if(nx){const html=nxt.map(b=>`<span class="tki">${lineTag(b)}<span class="d">${esc(b.dest)}</span><b${b.m<=5?' class="soon"':''}>${minTxt(b.m)}</b></span>`).join('');
+    if(chip.dataset.h!==html){chip.dataset.h=html;chip.innerHTML=`<span class="tk"><span class="tkm"><span class="tkr">${html}</span><span class="tkr" aria-hidden="true">${html}</span></span></span>`;fitTicker()}
+    chip.setAttribute('aria-label',`Next bus: ${nx.line} to ${nx.dest}, ${minTxt(nx.m)}.`+(nxt.length>1?` Then ${nxt.slice(1).map(b=>`${b.line} to ${b.dest}, ${minTxt(b.m)}`).join('; ')}.`:'')+' Show all departures.')}
   $('#bus').innerHTML=(rows.length?rows.map(b=>`<div class="dep">${lineTag(b)}<span class="d">${esc(b.dest)}${b.platform?` <small>· ${esc(b.platform)}</small>`:''}</span><span class="m${b.m<=5?' soon':''}">${minTxt(b.m)}</span></div>`).join('')
     :`<p class="empty">${bus.err?'':'No departures in the next 90 minutes.'}</p>`)+(bus.err?`<p class="note">${esc(bus.err)}</p>`:'')}
+// The ticker scrolls only when the departures don't fit, at a steady speed. Its position follows the clock,
+// so redrawing it (every 15 s, when the minutes change) doesn't make it jump back to the start.
+function fitTicker(){const chip=$('#busChip'),w=chip.querySelector('.tk'),r=chip.querySelector('.tkr');if(!w||chip.hidden)return;
+  chip.classList.remove('scroll');const len=r.offsetWidth,still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(still||len<=w.clientWidth+1)return;
+  const dur=Math.max(8,len/45),m=chip.querySelector('.tkm');chip.classList.add('scroll');
+  m.style.animationDuration=dur+'s';m.style.animationDelay=-(Date.now()/1e3%dur)+'s'}
+addEventListener('resize',()=>{clearTimeout(fitTicker.t);fitTicker.t=setTimeout(fitTicker,200)});
 async function loadBus(){if(!hh?.vt_gid){renderBus();return}
   const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'departures',gid:hh.vt_gid}});
   if(error||data?.error)bus={list:bus.list,err:'Live times unavailable right now.'};else bus={list:data.departures||[],err:''};renderBus()}

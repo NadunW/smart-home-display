@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.7 — 2026-11-20
+
+### Display
+- The next bus moved from the top of the screen to the empty space next to the tabs and became a ticker: it shows the next few departures and slowly scrolls through them when they don't all fit. Tap it for the Bus tab, as before. On phones it sits just above the tabs (#23).
+
 ## 1.0.6 — 2026-11-20
 
 ### Display

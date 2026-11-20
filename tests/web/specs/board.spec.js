@@ -1,6 +1,6 @@
 // The family board: header, tabs, the Today/Bus/Tasks/Weather boxes and the slideshow.
 import { test, expect } from '../harness.js';
-import { TODAY, seed } from '../fixtures.js';
+import { NOW, TODAY, seed } from '../fixtures.js';
 
 test.describe('header and footer', () => {
   test.beforeEach(async ({ display }) => { await display.open(); });
@@ -22,9 +22,11 @@ test.describe('header and footer', () => {
     await expect(page.locator('#count')).toHaveText('3 daysGrandma visits');
   });
 
-  test('shows the next bus that isn’t cancelled; tapping it opens the Bus tab', async ({ page, display }) => {
+  test('the header lists the next departures that aren’t cancelled; tapping it opens the Bus tab', async ({ page, display }) => {
     const chip = page.locator('#busChip');
-    await expect(chip).toHaveAccessibleName('Next bus: 6 to Kortedala, 3 min. Show all departures.');
+    await expect(chip).toHaveAccessibleName('Next bus: 6 to Kortedala, 3 min. Then 16 to Eketrägatan, 12 min. Show all departures.');
+    await expect(chip.locator('.tkr').first()).toHaveText(/6\s*Kortedala\s*3 min\s*16\s*Eketrägatan\s*12 min/);
+    await expect(chip).not.toContainText('Saltholmen');
     await chip.click();
     await expect(display.tab('Bus')).toHaveAttribute('aria-selected', 'true');
   });
@@ -219,4 +221,27 @@ test('phones never change tabs by themselves @phone', async ({ page, display }) 
   await page.clock.runFor(60_000);
   await expect(display.tab('Today')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#rotBar')).toHaveClass(/off/);
+});
+
+test('with more departures than fit, the header ticker scrolls through them', async ({ page, display }) => {
+  const state = seed();
+  const dep = (line, dest, m) => ({ line, dest, time: new Date(NOW.getTime() + m * 6e4).toISOString(), platform: 'A', bg: '#2e86de', fg: '#ffffff', cancelled: false });
+  state.vt.departures = [dep('6', 'Kortedala', 3), dep('16', 'Eketrägatan', 5), dep('11', 'Saltholmen', 8), dep('7', 'Bergsjön', 11), dep('25', 'Länsmansgården', 14), dep('19', 'Fredriksdal', 17)];
+  await display.open({ state });
+  const chip = page.locator('#busChip');
+  await expect(chip).toHaveAccessibleName(/^Next bus: 6 to Kortedala, 3 min\. Then 16 to Eketrägatan, 5 min; .*19 to Fredriksdal, 17 min\. Show all departures\.$/);
+  const first = chip.locator('.tki').first();
+  const x0 = (await first.boundingBox()).x;
+  await page.waitForTimeout(600);
+  expect((await first.boundingBox()).x).toBeLessThan(x0);
+});
+
+test('on a phone the departures sit above the tabs, full width @phone', async ({ page, display }) => {
+  await display.open();
+  const chip = page.locator('#busChip'), tabs = page.getByRole('tablist');
+  await expect(chip).toContainText('Kortedala');
+  const c = await chip.boundingBox(), t = await tabs.boundingBox();
+  expect(c.y + c.height).toBeLessThanOrEqual(t.y + 1);
+  expect(c.width).toBeGreaterThan(t.width * 0.9);
+  await page.screenshot({ path: test.info().outputPath('phone.png') });
 });

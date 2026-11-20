@@ -4,8 +4,11 @@ A kitchen/wall display for the family: clock, weather, countdown, today's appoin
 
 ```
 web/                         the app (static files: host anywhere)
-  index.html
+  index.html                 the page: header, tabs, boxes and dialogs
+  styles.css
+  js/                        the app's code, one file per part (core, auth, board, trips, rewards, …)
   config.js                  ← your Supabase URL + key go here
+tests/web/                   behaviour tests: the page in a browser with a fake Supabase
 supabase/
   migrations/                database, access rules, create/join family (applied in order)
   functions/vasttrafik/      server function that holds the Västtrafik key

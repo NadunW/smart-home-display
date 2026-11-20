@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.6 — 2026-11-20
+
+### Display
+- Behind the scenes: the page is now split into smaller files, so it's easier to change without breaking things. Nothing looks or works differently (#22).
+
 ## 1.0.5 — 2026-11-20
 
 ### Display

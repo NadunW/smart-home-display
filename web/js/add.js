@@ -1,0 +1,24 @@
+// The + Add / Edit dialog and tapping tasks and reminders on the board.
+/* ---------- add / edit ---------- */
+function setKind(k){kind=k;document.querySelectorAll('#kind button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k));
+  $('#lRep').style.display=k==='task'?'':'none';$('#lCount').style.display=k==='event'?'flex':'none'}
+function openAdd(it){editing=it||null;$('#addH').textContent=it?'Edit':'Add';
+  $('#fWho').innerHTML='<option value="">Everyone</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  setKind(it?.type||kind);$('#fTitle').value=it?.title||'';$('#fWho').value=it?.person_id||'';$('#fDate').value=it?it.date||'':ymd(now());$('#fTime').value=it?.time||'';
+  $('#fRep').value=it?.repeat||'none';$('#fCount').checked=!!it?.countdown;$('#fDel').style.display=it?'':'none';$('#ovAdd').classList.add('on');$('#fTitle').focus()}
+$('#addBtn').onclick=()=>openAdd();
+$('#kind').onclick=e=>{const b=e.target.closest('button');if(b)setKind(b.dataset.k)};
+$('#fAdd').onsubmit=e=>{e.preventDefault();const title=$('#fTitle').value.trim();if(!title)return;
+  const it={...(editing||{id:'tmp'+Date.now(),done:false,done_on:null}),type:kind,title,person_id:$('#fWho').value||null,date:$('#fDate').value,time:$('#fTime').value,repeat:kind==='task'?$('#fRep').value:'none',countdown:kind==='event'&&$('#fCount').checked};
+  if(editing&&editing.type==='task'&&(editing.repeat!==it.repeat||kind!=='task')){it.done=false;it.done_on=null}
+  $('#ovAdd').classList.remove('on');saveItem(it)};
+$('#fDel').onclick=()=>{if(editing)removeItem(editing.id);$('#ovAdd').classList.remove('on')};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.ov').classList.remove('on'));
+document.querySelectorAll('.ov').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('on')});
+$('#vBoard').addEventListener('click',e=>{const tg=e.target.closest('[data-toggle]'),ed=e.target.closest('[data-edit]');
+  if((tg||ed)&&isTmp((tg||ed).dataset.toggle||(tg||ed).dataset.edit))return;
+  if(tg){const it=items.find(i=>i.id===tg.dataset.toggle);if(!it)return;if(it.type==='reminder')return removeItem(it.id);
+    const d=isDone(it),k=it.repeat==='daily'?ymd(now()):it.repeat==='weekly'?weekKey(now()):'';
+    saveItem(it.repeat!=='none'?{...it,done_on:d?null:k}:{...it,done:!d})}
+  else if(ed){const it=items.find(i=>i.id===ed.dataset.edit);if(it)openAdd(it)}});
+

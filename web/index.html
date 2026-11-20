@@ -13,25 +13,34 @@ button{cursor:pointer;border:0;background:none;min-height:44px;border-radius:12p
 button:disabled{opacity:.5;cursor:default}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 [hidden]{display:none!important}
-/* Top bar: date and buttons. Header below: clock, today's weather and the hourly forecast. */
-.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px max(2.5vw,16px) 0}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px;padding:6px max(2.5vw,16px) 8px}
-.clock{font-size:clamp(64px,9vw,120px);font-weight:600;line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.date{font-size:22px;font-weight:600}.date small{color:var(--mute);font-size:18px;font-weight:400;margin-left:8px}
-.wx{display:flex;align-items:center;gap:12px}.wx .ic{font-size:56px;line-height:1}.wx b{font-size:60px;font-weight:600;line-height:1;letter-spacing:-.02em}
+/* The display: header (clock, weather, next bus, buttons), tabs, the board for the chosen tab, footer. */
+#vBoard{display:flex;flex-direction:column;min-height:100vh}
+.hd{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:12px max(2.5vw,16px) 6px}.hd>*{flex:none}
+@media(min-width:900px){.hd{flex-wrap:nowrap}}
+.when{display:grid;gap:4px}
+.clock{font-size:clamp(56px,6vw,80px);font-weight:600;line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.date{font-size:18px;font-weight:600;white-space:nowrap}.date small{color:var(--mute);font-size:15px;font-weight:400;margin-left:6px}
+.wx{display:flex;align-items:center;gap:12px}.wx .ic{font-size:44px;line-height:1}.wx b{font-size:48px;font-weight:600;line-height:1;letter-spacing:-.02em}
 .wx span{color:var(--mute);font-size:15px;line-height:1.35}.wx span em{color:var(--ink);font-style:normal;font-size:18px;font-weight:500}
-.fc{flex:1 1 340px;display:flex;overflow-x:auto;scrollbar-width:none;background:var(--card);border-radius:18px;padding:6px}
-.fc>div{flex:1 0 58px;display:grid;justify-items:center;gap:1px;padding:4px 2px;font-variant-numeric:tabular-nums}
-.fc small{color:var(--mute);font-size:14px}.fc i{font-style:normal;font-size:26px;line-height:1.2}.fc b{font-size:19px;font-weight:600}
-.fc .p{font-size:13px;color:light-dark(#1f6fc4,#6cb4ff);min-height:18px}.fc .nd{border-left:1px solid var(--line)}
-.count{background:var(--acc);color:#fff;border-radius:999px;padding:6px 16px;font-weight:500;font-size:17px;display:flex;align-items:baseline;gap:8px}.count b{font-size:22px;line-height:1.1}
+.hd .buschip{flex:0 1 auto;min-width:0}.buschip{display:flex;align-items:center;gap:10px;background:var(--card);padding:6px 14px 6px 6px;font-size:17px;max-width:100%}
+.buschip .line{width:48px;flex:none}.buschip .d{flex:0 1 auto;min-width:3em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.buschip b{flex:none;font-size:20px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.buschip b.soon{color:var(--acc)}
+.tabs{display:flex;gap:8px;padding:6px max(2.5vw,16px) 0;overflow-x:auto;scrollbar-width:none}
+.tabs button{flex:none;background:var(--card);padding:0 22px;font-weight:500;font-size:17px;white-space:nowrap}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+/* Hourly forecast (Weather tab). */
+.fc{display:flex;overflow-x:auto;scrollbar-width:none;background:var(--bg);border-radius:18px;padding:10px 6px}
+.fc>div{flex:1 0 70px;display:grid;justify-items:center;gap:2px;padding:4px 2px;font-variant-numeric:tabular-nums}
+.fc small{color:var(--mute);font-size:16px}.fc i{font-style:normal;font-size:38px;line-height:1.2}.fc b{font-size:26px;font-weight:600}
+.fc .p{font-size:15px;color:light-dark(#1f6fc4,#6cb4ff);min-height:20px}.fc .nd{border-left:1px solid var(--line)}
+.tom{display:flex;align-items:center;gap:14px;margin-top:14px;font-size:18px}.tom .ic{font-size:44px;line-height:1}.tom small{color:var(--mute);font-size:16px}
+.count{white-space:nowrap;background:var(--acc);color:#fff;border-radius:999px;padding:6px 16px;font-weight:500;font-size:17px;display:flex;align-items:baseline;gap:8px}.count b{font-size:22px;line-height:1.1}
 .tools{display:flex;gap:8px;margin-left:auto}#thBtn{min-width:44px;padding:0 12px;font-size:20px}
 .btn{background:var(--card);padding:0 16px;font-weight:500}.btn.pri{background:var(--ink);color:var(--bg)}
 .card{background:var(--card);border-radius:22px;padding:18px 20px}
 h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
 /* Board: 12-column grid; each box has a column, row, width and height in cells (set from JS). */
-.grid{position:relative;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:52px;gap:16px;padding:12px max(2.5vw,16px) 24px}
-.wgt{grid-column:var(--c,1)/span var(--w,4);grid-row:var(--r,1)/span var(--h,4);display:flex;flex-direction:column;position:relative;overflow:hidden;z-index:1}
+.grid{flex:1;align-content:start;position:relative;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:52px;gap:16px;padding:12px max(2.5vw,16px)}
+.wgt{container-type:inline-size;grid-column:var(--c,1)/span var(--w,4);grid-row:var(--r,1)/span var(--h,4);display:flex;flex-direction:column;position:relative;overflow:hidden;z-index:1}
 .wgt h2{flex:none}
 .wb{flex:1;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;margin:0 -8px;padding:0 8px}
 .cell{grid-column:var(--c)/span 1;grid-row:var(--r)/span 1;border-radius:14px;border:1px dashed var(--line);z-index:0}
@@ -66,6 +75,13 @@ h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
 .line{background:#00394d;color:#fff;font-weight:700;border-radius:9px;text-align:center;padding:5px 0;font-size:18px;box-shadow:0 0 0 1px light-dark(transparent,#ffffff2e)}
 .dep .d{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dep .d small{color:var(--mute);font-size:14px}
 .dep .m{font-size:22px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.dep .m.soon{color:var(--acc)}
+/* Wide boxes (a tab with one big box): bigger bus times, tasks and reward notes in columns. */
+@container (min-width:640px){
+  .dep{grid-template-columns:76px minmax(0,1fr) auto;gap:18px;padding:14px 0}.dep .line{font-size:24px;padding:8px 0}
+  .dep .d{font-size:26px}.dep .d small{font-size:18px}.dep .m{font-size:34px}
+  #tasks{columns:2 300px;column-gap:32px}#tasks .big{column-span:all}#tasks .who{break-inside:avoid;margin:0 0 14px}
+  #rw:has(.rwp){columns:2 320px;column-gap:32px}#rw .rwp{break-inside:avoid;padding-bottom:8px}
+}
 .note{font-size:13px;color:var(--mute);margin:8px 0 0}
 .rem{display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.rem:first-of-type{border-top:0}.rem .lbl{flex:1;text-align:left;font-size:17px}.rem small{color:var(--mute);display:block;font-size:14px}
 .ok{width:44px;flex:none;color:var(--mute);font-size:22px}
@@ -111,8 +127,8 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 .toast span{padding:10px 0}.toast button{color:inherit;text-decoration:underline;padding:0 12px}
 @keyframes pop{50%{transform:scale(1.25)}}.pop{animation:pop .5s}
 /* Phones: one column in the same order as the board, each box as tall as its content. */
-@media(max-width:699px){.grid{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto}.wgt{grid-column:auto;grid-row:auto;order:var(--o,0);overflow:visible}.wb{overflow:visible}#arrBtn{display:none}}
-@media(max-width:640px){header{gap:12px 20px}.clock{font-size:64px}.wx b{font-size:48px}.wx .ic{font-size:44px}.fc{flex-basis:100%}.tools{width:100%;margin-left:0}.tools .pri{flex:1}}
+@media(max-width:699px){.grid{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto!important}.wgt{grid-column:auto;grid-row:auto;order:var(--o,0);overflow:visible}.wb{overflow:visible}#arrBtn{display:none}}
+@media(max-width:640px){.hd{gap:10px 18px}.tabs button{padding:0 16px}.clock{font-size:56px}.wx b{font-size:40px}.wx .ic{font-size:36px}.tools{width:100%;margin-left:0}.tools .pri{flex:1}}
 body,.card,.dlg{transition:background-color .8s,color .8s}
 body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;pointer-events:none;z-index:20}
 @media(prefers-reduced-motion:reduce){.bar i,body,.card,.dlg{transition:none}.pop{animation:none}}
@@ -150,24 +166,23 @@ body.night::after{content:"";position:fixed;inset:0;background:#000;opacity:.6;p
 
 <!-- Display -->
 <div id="vBoard" hidden>
-<div class="top">
-  <div class="date" id="date"></div>
-  <div id="count"></div>
-  <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="arrBtn" aria-pressed="false">Arrange</button><button class="btn" id="thBtn" aria-label="Switch to dark" title="Switch to dark">☾</button><button class="btn" id="setBtn">Settings</button></div>
-</div>
-<header>
-  <div class="clock" data-clock>--:--</div>
+<header class="hd">
+  <div class="when"><div class="clock" data-clock>--:--</div><div class="date" id="date"></div></div>
   <div class="wx" id="wx"></div>
-  <div class="fc" id="fc" aria-label="Forecast for the coming hours" hidden></div>
+  <div id="count"></div>
+  <button type="button" class="buschip" id="busChip" hidden></button>
+  <div class="tools"><button class="btn pri" id="addBtn">+ Add</button><button class="btn" id="arrBtn" aria-pressed="false">Arrange</button><button class="btn" id="thBtn" aria-label="Switch to dark" title="Switch to dark">☾</button><button class="btn" id="setBtn">Settings</button></div>
 </header>
-<div class="arr" id="arrBar" hidden><span>Drag a box to move it. Drag its corner to make it bigger or smaller. Saved on this device.</span><button type="button" class="btn" id="arrReset">Reset layout</button><button type="button" class="btn pri" id="arrDone">Done</button></div>
+<nav class="tabs" id="tabs" role="tablist" aria-label="Screens"></nav>
+<div class="arr" id="arrBar" hidden><span>Drag a box to move it. Drag its corner to make it bigger or smaller. Each tab has its own layout, saved on this device.</span><button type="button" class="btn" id="arrReset">Reset layout</button><button type="button" class="btn pri" id="arrDone">Done</button></div>
 <main class="grid" id="board">
   <section class="card wgt" data-w="today"><h2>Today</h2><div class="wb" id="today"></div></section>
   <section class="card wgt" data-w="soon"><h2>Coming up</h2><div class="wb" id="soon"></div></section>
   <section class="card wgt" data-w="tasks"><h2>Family tasks</h2><div class="wb" id="tasks"></div></section>
-  <section class="card wgt" data-w="rw" id="rwCard" hidden><h2>Reward notes</h2><div class="wb" id="rw"></div></section>
+  <section class="card wgt" data-w="rw" id="rwCard"><h2>Reward notes</h2><div class="wb" id="rw"></div></section>
   <section class="card wgt" data-w="bus"><h2 id="busH">Next departures</h2><div class="wb" id="bus"></div></section>
   <section class="card wgt" data-w="rems"><h2>Reminders</h2><div class="wb" id="rems"></div></section>
+  <section class="card wgt" data-w="wxw"><h2 id="wxH">Weather</h2><div class="wb"><div class="fc" id="fc" aria-label="Forecast for the coming hours"></div><div class="tom" id="tom"></div></div></section>
 </main>
 <footer class="status"><span id="status"></span><span id="ver"></span></footer>
 </div>
@@ -348,12 +363,18 @@ function render(){if(!hh)return;
     :`<p class="empty">${people.length?'No tasks yet. Tap “+ Add” to give someone a chore.':'Open Settings to add the people in your family.'}</p>`;
   const rems=items.filter(i=>i.type==='reminder').sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
   $('#rems').innerHTML=rems.length?rems.map(r=>`<div class="rem"><span class="av" style="background:${esc(colorOf(r.person_id))}">${esc(nameOf(r.person_id)[0])}</span><button class="lbl" data-edit="${esc(r.id)}">${esc(r.title)}<small>${r.date?esc(new Date(r.date+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}))+(r.time?' '+esc(r.time):''):esc(nameOf(r.person_id))}</small></button><button class="ok" data-toggle="${esc(r.id)}" aria-label="Dismiss reminder">✓</button></div>`).join(''):'<p class="empty">No reminders.</p>';
-  renderRewards();if($('#ovRw').classList.contains('on'))drawRw();renderBus();renderWx();applyLayout()}
+  renderRewards();if($('#ovRw').classList.contains('on'))drawRw();renderBus();renderWx();applyTab()}
 
-function renderBus(){if(!hh)return;$('#busH').textContent='Next departures'+(hh.vt_stop?' · '+hh.vt_stop:'');
-  if(!hh.vt_gid){$('#bus').innerHTML='<p class="empty">Choose your stop in Settings.</p>';return}
-  const d=now(),rows=bus.list.filter(b=>!b.cancelled).map(b=>({...b,m:Math.round((new Date(b.time)-d)/6e4)})).filter(b=>b.m>=-1).slice(0,6);
-  $('#bus').innerHTML=(rows.length?rows.map(b=>`<div class="dep"><span class="line"${b.bg?` style="background:${esc(b.bg)};color:${esc(b.fg||'#fff')}"`:''}>${esc(b.line)}</span><span class="d">${esc(b.dest)}${b.platform?` <small>· ${esc(b.platform)}</small>`:''}</span><span class="m${b.m<=5?' soon':''}">${b.m<=0?'Now':b.m+' min'}</span></div>`).join('')
+const lineTag=b=>`<span class="line"${b.bg?` style="background:${esc(b.bg)};color:${esc(b.fg||'#fff')}"`:''}>${esc(b.line)}</span>`;
+const minTxt=m=>m<=0?'Now':m+' min';
+function renderBus(){if(!hh)return;$('#busH').textContent='Next departures'+(hh.vt_stop?' · '+hh.vt_stop:'');const chip=$('#busChip');
+  if(!hh.vt_gid){chip.hidden=true;$('#bus').innerHTML='<p class="empty">Choose your stop in Settings.</p>';return}
+  const d=now(),rows=bus.list.filter(b=>!b.cancelled).map(b=>({...b,m:Math.round((new Date(b.time)-d)/6e4)})).filter(b=>b.m>=-1).slice(0,8);
+  // Header: the next bus, always on screen. Tap it for the Bus tab.
+  const nx=rows.find(b=>b.m>=0);chip.hidden=!nx;
+  if(nx){chip.innerHTML=`${lineTag(nx)}<span class="d">${esc(nx.dest)}</span><b${nx.m<=5?' class="soon"':''}>${minTxt(nx.m)}</b>`;
+    chip.setAttribute('aria-label',`Next bus: ${nx.line} to ${nx.dest}, ${minTxt(nx.m)}. Show all departures.`)}
+  $('#bus').innerHTML=(rows.length?rows.map(b=>`<div class="dep">${lineTag(b)}<span class="d">${esc(b.dest)}${b.platform?` <small>· ${esc(b.platform)}</small>`:''}</span><span class="m${b.m<=5?' soon':''}">${minTxt(b.m)}</span></div>`).join('')
     :`<p class="empty">${bus.err?'':'No departures in the next 90 minutes.'}</p>`)+(bus.err?`<p class="note">${esc(bus.err)}</p>`:'')}
 async function loadBus(){if(!hh?.vt_gid){renderBus();return}
   const{data,error}=await sb.functions.invoke('vasttrafik',{body:{action:'departures',gid:hh.vt_gid}});
@@ -362,9 +383,11 @@ async function loadBus(){if(!hh?.vt_gid){renderBus();return}
 // Open-Meteo weather codes → words and an icon (night versions when the sun is down).
 const wxWord=c=>c===0?'Clear':c===1?'Mostly clear':c===2?'Partly cloudy':c===3?'Cloudy':c<=48?'Fog':c<=57?'Drizzle':c<=67?'Rain':c<=77?'Snow':c<=82?'Showers':c<=86?'Snow showers':'Thunder';
 const wxIcon=(c,day)=>c<=1?(day?'☀️':'🌙'):c===2?(day?'⛅':'☁️'):c===3?'☁️':c<=48?'🌫️':c<=57?'🌦️':c<=67?'🌧️':c<=77?'🌨️':c<=82?(day?'🌦️':'🌧️'):c<=86?'🌨️':'⛈️';
-function renderWx(){if(!hh)return;const fc=$('#fc');
-  if(!hh.lat||!wx){$('#wx').innerHTML=hh.lat?'':'<span>Set your town in Settings<br>to see the weather</span>';fc.hidden=true;return}
-  $('#wx').innerHTML=`<span class="ic" aria-hidden="true">${wxIcon(wx.code,wx.day)}</span><b>${Math.round(wx.t)}°</b><span><em>${esc(wxWord(wx.code))}</em><br>Feels ${Math.round(wx.feel)}° · ${Math.round(wx.wind)} m/s<br>${Math.round(wx.hi)}° / ${Math.round(wx.lo)}°${wx.rain>=20?' · 💧'+wx.rain+'%':''}${hh.place?' · '+esc(hh.place):''}</span>`;
+function renderWx(){if(!hh)return;const fc=$('#fc');$('#wxH').textContent='Weather'+(hh.place?' · '+hh.place:'');
+  if(!hh.lat||!wx){$('#wx').innerHTML=hh.lat?'':'<span>Set your town in Settings<br>to see the weather</span>';fc.hidden=true;
+    $('#tom').innerHTML=`<p class="empty">${hh.lat?'Loading the forecast…':'Choose your town in Settings to see the forecast.'}</p>`;return}
+  $('#wx').innerHTML=`<span class="ic" aria-hidden="true">${wxIcon(wx.code,wx.day)}</span><b>${Math.round(wx.t)}°</b><span><em>${esc(wxWord(wx.code))}</em><br>Feels ${Math.round(wx.feel)}° · ${Math.round(wx.wind)} m/s<br>${Math.round(wx.hi)}° / ${Math.round(wx.lo)}°${wx.rain>=20?' · 💧'+wx.rain+'%':''}</span>`;
+  const tm=wx.tom;$('#tom').innerHTML=tm?`<span class="ic" aria-hidden="true">${wxIcon(tm.code,true)}</span><span><b>Tomorrow</b> · ${esc(wxWord(tm.code))}<br><small>${Math.round(tm.hi)}° / ${Math.round(tm.lo)}°${tm.rain>=20?' · 💧'+tm.rain+'%':''}</small></span>`:'';
   // The rest of today, hour by hour (every 2 hours if that's a lot); late in the evening it runs on into tomorrow morning.
   const d=now(),key=ymd(d)+'T'+pad(d.getHours()),i0=wx.hours.findIndex(h=>h.time.slice(0,13)>key);
   let next=i0<0?[]:wx.hours.slice(i0);const todayN=next.filter(h=>h.time.startsWith(ymd(d))).length;
@@ -373,10 +396,11 @@ function renderWx(){if(!hh)return;const fc=$('#fc');
   fc.innerHTML=next.map(h=>{const nd=!h.time.startsWith(last);last=h.time.slice(0,10);
     return `<div${nd?' class="nd"':''}><small>${nd?esc(new Date(h.time.slice(0,10)+'T12:00').toLocaleDateString('en-GB',{weekday:'short'}))+' ':''}${h.time.slice(11,13)}</small><i title="${esc(wxWord(h.code))}">${wxIcon(h.code,h.day)}</i><b>${Math.round(h.t)}°</b><span class="p">${h.p>=20?h.p+'%':''}</span></div>`}).join('')}
 async function loadWeather(){if(!hh?.lat){wx=null;renderWx();return}
-  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${hh.lat}&longitude=${hh.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&wind_speed_unit=ms&timezone=auto&forecast_days=2`);
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${hh.lat}&longitude=${hh.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&wind_speed_unit=ms&timezone=auto&forecast_days=2`);
     if(!r.ok)throw 0;const j=await r.json(),H=j.hourly;
     wx={t:j.current.temperature_2m,feel:j.current.apparent_temperature,code:j.current.weather_code,wind:j.current.wind_speed_10m,day:!!j.current.is_day,
       hi:j.daily.temperature_2m_max[0],lo:j.daily.temperature_2m_min[0],rain:j.daily.precipitation_probability_max?.[0]??0,
+      tom:j.daily.time?.length>1?{code:j.daily.weather_code[1],hi:j.daily.temperature_2m_max[1],lo:j.daily.temperature_2m_min[1],rain:j.daily.precipitation_probability_max?.[1]??0}:null,
       hours:H.time.map((t,i)=>({time:t,t:H.temperature_2m[i],code:H.weather_code[i],p:H.precipitation_probability?.[i]??0,day:!!H.is_day[i]}))};
     const ri=new Date(j.daily.sunrise[0]),se=new Date(j.daily.sunset[0]);if(!isNaN(ri)&&!isNaN(se)){sun={rise:ri,set:se};try{localStorage.setItem('fhd.sun',JSON.stringify({rise:ri.getHours()*60+ri.getMinutes(),set:se.getHours()*60+se.getMinutes()}))}catch(e){}}}catch(e){}renderWx();applyTheme()}
 
@@ -421,7 +445,7 @@ const doneFor=(it,pid)=>it.per!=='any'&&rLog.some(l=>l.item_id===it.id&&l.person
 function rwPeople(){const own=people.filter(p=>rItems.some(i=>i.person_id===p.id)||p.id in rBal||rLog.some(l=>l.person_id===p.id));return own.length?own:rItems.length?people:[]}
 const goalOf=p=>{const g=p?.goal_item&&rItems.find(i=>i.id===p.goal_item);return g&&g.kind==='spend'?g:null};
 const dayLabel=d=>d===today()?'Today':d===ymd(new Date(Date.now()-864e5))?'Yesterday':new Date(d+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-function renderRewards(){$('#rwCard').hidden=rOff;if(rOff)return;const kids=rwPeople();
+function renderRewards(){if(rOff)return;const kids=rwPeople();
   if(!kids.length){$('#rw').innerHTML=people.length?`<p class="empty" style="margin-bottom:10px">Kids earn notes for chores and good habits, then spend them on rewards.</p><div class="find"><select id="rwSeedWho" aria-label="Who the chart is for">${people.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select><button type="button" class="btn pri" id="rwSeed">Start with the example chart</button></div><button type="button" class="btn" id="rwOwn" style="margin-top:8px">Or build your own</button>`:'<p class="empty">Open Settings to add the people in your family.</p>';return}
   $('#rw').innerHTML=kids.map(p=>{const b=bal(p.id),t=rLog.filter(l=>l.person_id===p.id&&l.day===today()&&l.notes>0).reduce((s,l)=>s+l.notes,0),g=goalOf(p);
     return `<div class="rwp"><button class="rwk" data-rw="${esc(p.id)}"><span class="av" style="background:${esc(p.color)}">${esc(p.name[0]||'?')}</span><span><b>${esc(p.name)}</b><small>${t?'+'+t+' today · ':''}Tap to earn or spend</small></span><span class="bal">${b}<small> notes</small></span></button>`+
@@ -612,12 +636,14 @@ let lock=null;const wake=async()=>{try{if('wakeLock' in navigator&&!lock){lock=a
 document.addEventListener('click',wake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)wake()});
 
 /* ---------- board layout ---------- */
-// The board is a 12-column grid. Each box has a position and size in cells, kept per device (like the theme),
-// so the wall tablet and a laptop can each have their own. Boxes float up to fill gaps and push others
-// down when they would overlap. Phones show one column in the same order.
-const COLS=12,LYK='fhd.layout';
-const WDEF={today:{x:0,y:0,w:4,h:4,mw:3,mh:2},soon:{x:0,y:4,w:4,h:4,mw:3,mh:2},tasks:{x:4,y:0,w:4,h:5,mw:3,mh:3},
-  rw:{x:4,y:5,w:4,h:3,mw:3,mh:2},bus:{x:8,y:0,w:4,h:5,mw:3,mh:3},rems:{x:8,y:5,w:4,h:3,mw:3,mh:2}};
+// Each tab has its own board: a 12-column grid. Each box has a position and size in cells, kept per device
+// (like the theme), so the wall tablet and a laptop can each have their own. Boxes float up to fill gaps and
+// push others down when they would overlap. Phones show one column in the same order.
+// Every box lives on one tab; the defaults fill a landscape tablet (about 8 rows under the header).
+const COLS=12,LYK='fhd.layout2';
+const WDEF={today:{tab:'today',x:0,y:0,w:6,h:8,mw:3,mh:2},soon:{tab:'today',x:6,y:0,w:6,h:5,mw:3,mh:2},rems:{tab:'today',x:6,y:5,w:6,h:3,mw:3,mh:2},
+  bus:{tab:'bus',x:0,y:0,w:12,h:8,mw:3,mh:3},tasks:{tab:'tasks',x:0,y:0,w:12,h:8,mw:3,mh:3},rw:{tab:'rw',x:0,y:0,w:12,h:8,mw:3,mh:2},
+  wxw:{tab:'wx',x:0,y:0,w:12,h:5,mw:4,mh:3}};
 const board=$('#board'),wEls=()=>[...board.querySelectorAll('.wgt')],wEl=id=>board.querySelector(`.wgt[data-w="${id}"]`);
 const narrow=matchMedia('(max-width:699px)'),calm=matchMedia('(prefers-reduced-motion: reduce)');
 const fit=({id,x,y,w,h})=>{const d=WDEF[id];w=Math.min(COLS,Math.max(d.mw,Math.round(w)||d.w));h=Math.min(40,Math.max(d.mh,Math.round(h)||d.h));
@@ -631,7 +657,8 @@ function settle(list,leadId,down){const L=list.map(b=>({...b})),lead=L.find(b=>b
   const K=new Map(L.map(b=>[b,key(b)]));L.sort((a,b)=>K.get(a)-K.get(b)||a.x-b.x);
   const out=[];for(const b of L){b.y=0;for(let c;(c=out.find(o=>hit(o,b)));)b.y=c.y+c.h;out.push(b)}return out}
 function loadLayout(){let s=[];try{s=JSON.parse(localStorage.getItem(LYK)||'[]')}catch(e){}if(!Array.isArray(s))s=[];
-  return settle(Object.keys(WDEF).map(id=>fit({...WDEF[id],...(s.find(b=>b&&b.id===id)||{}),id})))}
+  const all=Object.keys(WDEF).map(id=>fit({...WDEF[id],...(s.find(b=>b&&b.id===id)||{}),id}));
+  return[...new Set(Object.values(WDEF).map(d=>d.tab))].flatMap(t=>settle(all.filter(b=>WDEF[b.id].tab===t)))}
 let layout=loadLayout(),arranging=false,drag=null,cellRows=0;
 const shown=()=>settle(layout.filter(b=>!wEl(b.id).hidden));
 function placeEls(L,from){const anim=arranging&&!calm.matches,els=wEls().filter(e=>!e.hidden);
@@ -645,14 +672,21 @@ function placeEls(L,from){const anim=arranging&&!calm.matches,els=wEls().filter(
 function drawCells(L){const rows=arranging?Math.max(8,...L.map(b=>b.y+b.h))+3:0;if(rows===cellRows)return;cellRows=rows;
   board.querySelectorAll('.cell').forEach(c=>c.remove());let h='';
   for(let r=1;r<=rows;r++)for(let c=1;c<=COLS;c++)h+=`<i class="cell" style="--c:${c};--r:${r}"></i>`;board.insertAdjacentHTML('afterbegin',h)}
-function applyLayout(){if(!drag)placeEls(shown())}
+// Rows stretch so that 8 rows fill the screen under the header (52px rows on a small screen).
+const ROWS=8;
+function sizeRows(){if(narrow.matches){board.style.gridAutoRows='';return}const cs=getComputedStyle(board),g=parseFloat(cs.rowGap)||16;
+  const avail=innerHeight-(board.getBoundingClientRect().top+scrollY)-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-$('footer.status').offsetHeight;
+  const rh=Math.max(52,Math.min(110,Math.floor((avail-(ROWS-1)*g)/ROWS)))+'px';if(board.style.gridAutoRows!==rh)board.style.gridAutoRows=rh}
+addEventListener('resize',()=>{sizeRows()});
+function applyLayout(){if(!drag){sizeRows();placeEls(shown())}}
 function commit(vis,from){layout=[...vis.map(fit),...layout.filter(b=>!vis.some(v=>v.id===b.id))];
   try{localStorage.setItem(LYK,JSON.stringify(layout))}catch(e){}placeEls(vis,from)}
 function setArranging(on){arranging=!!on&&!narrow.matches;document.body.classList.toggle('arranging',arranging);$('#arrBar').hidden=!arranging;
   $('#arrBtn').setAttribute('aria-pressed',arranging);cellRows=-1;applyLayout()}
 wEls().forEach(e=>e.insertAdjacentHTML('beforeend',`<div class="wcov" tabindex="0" role="button" aria-label="${esc(e.querySelector('h2').textContent)}. Drag to move, or use the arrow keys. Shift and arrow keys change the size."></div><div class="wrs" aria-hidden="true"></div>`));
 $('#arrBtn').onclick=()=>setArranging(!arranging);$('#arrDone').onclick=()=>setArranging(false);
-$('#arrReset').onclick=()=>{try{localStorage.removeItem(LYK)}catch(e){}layout=loadLayout();placeEls(shown())};
+// Reset puts back the default layout of the tab that's showing; the other tabs keep theirs.
+$('#arrReset').onclick=()=>commit(settle(shown().map(b=>fit({...WDEF[b.id],id:b.id}))));
 narrow.addEventListener('change',()=>{if(narrow.matches)setArranging(false);applyLayout()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&arranging&&!document.querySelector('.ov.on'))setArranging(false)});
 
@@ -685,10 +719,27 @@ board.addEventListener('keydown',e=>{const cv=e.target.closest('.wcov'),k={Arrow
   else if(k[1]<0){const o=base.filter(o=>cols(o)&&o.y+o.h<=b.y).sort((a,c)=>c.y-a.y)[0];if(!o)return;b.y=Math.max(0,Math.ceil(o.y+o.h/2)-1)}
   else{const o=base.filter(o=>cols(o)&&o.y>=b.y+b.h).sort((a,c)=>a.y-c.y)[0];if(!o)return;b.y=Math.floor(o.y+o.h/2-b.h)+1}
   commit(settle(base.map(v=>v.id===b.id?b:v),b.id,k[1]>0))});
-applyLayout();
+
+/* ---------- tabs ---------- */
+// The body shows one tab at a time. Tap a tab to switch; the choice is kept per device.
+const TABS=[['today','Today'],['bus','Bus'],['tasks','Tasks'],['rw','Rewards'],['wx','Weather']],TBK='fhd.tab';
+let tab='today';try{tab=localStorage.getItem(TBK)||'today'}catch(e){}
+$('#tabs').innerHTML=TABS.map(([id,n])=>`<button type="button" role="tab" data-tab="${id}" id="tab-${id}">${n}</button>`).join('');
+const tabOk=id=>TABS.some(t=>t[0]===id)&&!(id==='rw'&&rOff);
+function applyTab(){if(!tabOk(tab))tab='today';
+  $('#tabs').querySelectorAll('[data-tab]').forEach(b=>{const on=b.dataset.tab===tab;b.hidden=b.dataset.tab==='rw'&&rOff;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1});
+  wEls().forEach(e=>{e.hidden=WDEF[e.dataset.w].tab!==tab||(e.dataset.w==='rw'&&rOff)});
+  applyLayout()}
+function setTab(id,focus){if(!tabOk(id))return;tab=id;try{localStorage.setItem(TBK,id)}catch(e){}applyTab();if(focus)$('#tab-'+id).focus()}
+$('#tabs').onclick=e=>{const b=e.target.closest('[data-tab]');if(b)setTab(b.dataset.tab)};
+// Left/right arrow keys move between tabs.
+$('#tabs').onkeydown=e=>{const d={ArrowLeft:-1,ArrowRight:1}[e.key];if(!d)return;e.preventDefault();
+  const ids=TABS.map(t=>t[0]).filter(tabOk),i=ids.indexOf(tab);setTab(ids[(i+d+ids.length)%ids.length],true)};
+$('#busChip').onclick=()=>setTab('bus');
+applyTab();
 
 /* ---------- go ---------- */
-applyTheme();tick();applyScreen();setInterval(()=>{tick();renderBus();applyTheme();applyScreen()},15000);
+applyTheme();tick();applyScreen();setInterval(()=>{tick();renderBus();applyTheme();applyScreen();sizeRows()},15000);
 let lastDay=ymd(now());setInterval(()=>{if(ymd(now())!==lastDay){lastDay=ymd(now());render()}},6e4);
 // ---------- auto-update ----------
 // The deploy workflow stamps BUILD and writes version.txt. Every 2 minutes the page checks

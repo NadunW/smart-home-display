@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.1 — 2026-11-20
+
+### Display
+- New layout: clock, weather, countdown, next bus and buttons in the header, *Synced* and the version in the footer, and the rest split into tabs (Today, Bus, Tasks, Rewards, Weather). Tap a tab to switch, or tap the bus in the header for all departures. Each tab has its own *Arrange* layout and fills the screen (#14).
+
 ## 1.0.0 — 2026-11-20
 
 First numbered version. Everything built so far:

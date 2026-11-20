@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.10 — 2026-11-21
+
+### Display
+- Behind the scenes: a small file that proves to Google the display's web address belongs to us, so Google can approve the Google Calendar connection. Nothing looks different (#26).
+
 ## 1.0.9 — 2026-11-20
 
 ### Display

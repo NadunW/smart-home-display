@@ -109,7 +109,7 @@ The workflow deploys both server functions: `vasttrafik` (with *Verify JWT* on) 
 
 ## Android wall app
 
-`android/` is a small app that shows the page full screen, keeps the screen on and lets the page dim and wake the screen. GitHub builds it automatically (`.github/workflows/android.yml`); every build on `main` is published as the latest release.
+`android/` is a small app that shows the page full screen, keeps the screen on and lets the page dim and wake the screen. GitHub builds it automatically (`.github/workflows/android.yml`); every build on `main` is published as the latest release, tagged `android-X.Y.Z`. `X.Y` comes from `android/VERSION`; the last number counts the changes to the app (`android/` or its workflow) merged since that file was last edited. To start a new version, change `android/VERSION` (say to `1.2`) and the count restarts at `1.2.0`.
 
 **Install on the tablet**
 1. On the tablet, open `https://github.com/NadunW/smart-home-display/releases/latest/download/family-display.apk`.

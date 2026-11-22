@@ -26,6 +26,20 @@ jobs:
       VERSION_CODE: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # full history, to count changes for the patch number
+
+      # Version is MAJOR.MINOR from android/VERSION plus PATCH = changes to the app (android/ or
+      # this workflow) on main since android/VERSION last changed (a merged PR counts once).
+      # Edit android/VERSION to bump; the patch restarts at 0. versionCode stays the run number,
+      # so every APK still installs over the previous one.
+      - name: Work out the version
+        run: |
+          BASE=$(git log -1 --format=%H -- android/VERSION)
+          PATCH=$(git rev-list --count --first-parent "$BASE"..HEAD -- android .github/workflows/android.yml)
+          VER="$(tr -d '[:space:]' < android/VERSION).$PATCH"
+          echo "Version $VER (build $VERSION_CODE)"
+          echo "VERSION_NAME=$VER" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v5
         with:
@@ -76,7 +90,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "android-${{ github.run_number }}" family-display.apk \
-            --title "Family Display app 1.0.${{ github.run_number }}" \
+          TAG="android-$VERSION_NAME"
+          # A manual re-run with no app changes has the same version: keep the release already out.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::notice::$TAG is already released; nothing new to publish"
+            exit 0
+          fi
+          gh release create "$TAG" family-display.apk \
+            --target "$GITHUB_SHA" \
+            --title "Family Display app $VERSION_NAME" \
             --notes "Install on the wall tablet: open https://github.com/${{ github.repository }}/releases/latest/download/family-display.apk on the tablet." \
             --latest

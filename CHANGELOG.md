@@ -10,6 +10,9 @@ when they were merged.
 ### Display
 - Press and hold an appointment, task or reminder for half a second to change or delete it, so a passing tap no longer opens it by accident. A quick tap on a task's name ticks it off; on an appointment or reminder it shows a reminder to hold (#30).
 
+### Android app
+- The wall app's releases are now numbered like the display, e.g. *Family Display app 1.1.0* tagged `android-1.1.0`, instead of a plain build number. The number goes up by one with each change to the app (#33).
+
 ## 1.0.13 — 2026-11-22
 
 ### Display

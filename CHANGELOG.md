@@ -11,7 +11,7 @@ when they were merged.
 - *What to wear* shows a proper winter hat instead of a ball of yarn (#29).
 
 ### Hosting
-- Every version of the display that goes live now gets a tag in GitHub (`web-1.0.13` and so on), so you can see exactly what each version contained. (#31).
+- Every version of the display that goes live now gets a tag in GitHub (`web-1.0.13` and so on), so you can see exactly what each version contained (#31).
 - The version tag is now made only for the version being put live, which GitHub allows; the first try failed after the update had already gone out (#32).
 
 ## 1.0.12 — 2026-11-22

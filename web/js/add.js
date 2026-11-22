@@ -20,5 +20,21 @@ $('#vBoard').addEventListener('click',e=>{const tg=e.target.closest('[data-toggl
   if(tg){const it=items.find(i=>i.id===tg.dataset.toggle);if(!it)return;if(it.type==='reminder')return removeItem(it.id);
     const d=isDone(it),k=it.repeat==='daily'?ymd(now()):it.repeat==='weekly'?weekKey(now()):'';
     saveItem(it.repeat!=='none'?{...it,done_on:d?null:k}:{...it,done:!d})}
-  else if(ed){const it=items.find(i=>i.id===ed.dataset.edit);if(it)openAdd(it)}});
+  else if(ed){const it=items.find(i=>i.id===ed.dataset.edit);if(!it)return;
+    if(held===ed){held=null;return}           // the press already opened it
+    if(e.detail===0)return openAdd(it);       // Enter or Space from the keyboard
+    if(it.type==='task')return $('#vBoard').querySelector(`[data-toggle="${CSS.escape(it.id)}"]`)?.click();  // a tap ticks a task
+    toast('Hold to change or delete it')}});
+// Press and hold (half a second) an appointment, task or reminder to change it, so a passing tap on the
+// wall display doesn't open a dialog. A right-click does the same on a computer.
+const HOLD_MS=500;let hold=null,held=null;
+const holdEnd=()=>{if(!hold)return;clearTimeout(hold.t);hold.el.classList.remove('holding');hold=null};
+const holdOpen=el=>{holdEnd();const it=items.find(i=>i.id===el.dataset.edit);if(!it||isTmp(it.id))return;held=el;
+  try{navigator.vibrate?.(15)}catch(e){}openAdd(it)};
+$('#vBoard').addEventListener('pointerdown',e=>{const ed=e.target.closest('[data-edit]');if(!ed||e.button>0||arranging)return;holdEnd();held=null;
+  ed.classList.add('holding');hold={el:ed,x:e.clientX,y:e.clientY,t:setTimeout(()=>holdOpen(ed),HOLD_MS)}});
+$('#vBoard').addEventListener('pointermove',e=>{if(hold&&Math.hypot(e.clientX-hold.x,e.clientY-hold.y)>12)holdEnd()});
+['pointerup','pointercancel','pointerleave'].forEach(t=>$('#vBoard').addEventListener(t,holdEnd));
+$('#vBoard').addEventListener('contextmenu',e=>{const ed=e.target.closest('[data-edit]');if(!ed)return;e.preventDefault();
+  if(held!==ed&&!arranging)holdOpen(ed)});
 

@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.14 — 2026-11-22
+
+### Display
+- Press and hold an appointment, task or reminder for half a second to change or delete it, so a passing tap no longer opens it by accident. A quick tap on a task's name ticks it off; on an appointment or reminder it shows a reminder to hold (#30).
+
 ## 1.0.13 — 2026-11-22
 
 ### Display

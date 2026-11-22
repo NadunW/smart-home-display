@@ -40,10 +40,12 @@ function renderRain(){const el=$('#rain2'),d=now(),m=(wx.mins||[]).filter(q=>new
 
 // What to wear: from the "feels like" temperature, rain, snow and wind for the rest of the school day
 // (07–17, or the next 3 hours if that's later). From 17:00 it shows tomorrow.
+// Emoji has no winter hat (🧢 is a cap), so the hat is a small drawn beanie with a pom-pom.
+const BEANIE='<svg class="beanie" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 22C5 13 10 9 16 9s11 4 11 13z" fill="#e0533f"/><path d="M11 11.5C9 14 8.5 17 8.5 21M16 9.5V21M21 11.5c2 2.5 2.5 5.5 2.5 9.5" stroke="#c43c2a" stroke-width="1.2" fill="none" stroke-linecap="round"/><rect x="3.5" y="20" width="25" height="7.5" rx="2.5" fill="#b8321f"/><path d="M8 21.5v4.5M12 21.5v4.5M16 21.5v4.5M20 21.5v4.5M24 21.5v4.5" stroke="#8f2516" stroke-width="1.2" stroke-linecap="round"/><circle cx="16" cy="6" r="3.6" fill="#f3efe8" stroke="#d8d0c4" stroke-width=".8"/></svg>';
 function wearTips(feel,wet,snow,wind){const t=[];
-  if(feel<-10)t.push(['🧥','Winter overall + wool layer'],['🧶','Warm hat'],['🧤','Thick mittens'],['🧣','Scarf or neck warmer'],['🥾','Winter boots']);
-  else if(feel<0)t.push(['🧥','Winter overall'],['🧶','Hat'],['🧤','Mittens'],['🥾','Winter boots']);
-  else if(feel<7)t.push(wet&&!snow?['🧥','Lined rain jacket and trousers']:['🧥','Lined jacket and trousers'],['🧶','Thin hat'],['🧤','Gloves'],wet?['👢','Lined rubber boots']:['👟','Warm shoes']);
+  if(feel<-10)t.push(['🧥','Winter overall + wool layer'],[BEANIE,'Warm hat'],['🧤','Thick mittens'],['🧣','Scarf or neck warmer'],['🥾','Winter boots']);
+  else if(feel<0)t.push(['🧥','Winter overall'],[BEANIE,'Hat'],['🧤','Mittens'],['🥾','Winter boots']);
+  else if(feel<7)t.push(wet&&!snow?['🧥','Lined rain jacket and trousers']:['🧥','Lined jacket and trousers'],[BEANIE,'Thin hat'],['🧤','Gloves'],wet?['👢','Lined rubber boots']:['👟','Warm shoes']);
   else if(feel<14)t.push(wet?['🧥','Rain jacket and rain trousers']:['🧥','Light jacket'],['👖','Long trousers'],wet?['👢','Rubber boots']:['👟','Trainers']);
   else if(feel<20)t.push(wet?['🧥','Rain jacket']:['👕','Sweater or thin jacket'],wet?['👢','Rubber boots']:['👟','Trainers']);
   else t.push(['👕','T-shirt and shorts'],['🧢','Sun hat'],...(wet?[['🧥','Thin rain jacket']]:[]));

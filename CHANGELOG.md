@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.13 — 2026-11-22
+
+### Display
+- *What to wear* shows a proper winter hat instead of a ball of yarn (#29).
+
 ## 1.0.12 — 2026-11-22
 
 ### Display

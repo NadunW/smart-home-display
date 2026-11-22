@@ -82,17 +82,26 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v5
 
-      # Tag the released commit as web-x.y.z so every version shown in the footer can be found
-      # in GitHub (Code → Tags). A redeploy of the same version (manual run, workflow-only change)
-      # keeps the tag where the version first went out.
-      - name: Tag this version
+      # Tag every version as web-x.y.z on the commit where it went live, so each version shown in
+      # the footer can be found in GitHub (Code → Tags). Missing tags for earlier versions of this
+      # MAJOR.MINOR are filled in too. Existing tags are left where they are, so a redeploy of the
+      # same version (manual run, workflow-only change) doesn't move them.
+      - name: Tag versions
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="web-$VER"
-          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null; then
-            echo "Tag $TAG already exists; leaving it as it is"
-          else
-            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" --silent
-            echo "Tagged $GITHUB_SHA as $TAG"
-          fi
+          MM="$(tr -d '[:space:]' < VERSION)"
+          BASE=$(git log -1 --format=%H -- VERSION)
+          mapfile -t WEB < <(git rev-list --reverse --first-parent "$BASE"..HEAD -- web)
+          # x.y.0 is main just before the first web change after VERSION changed (or now, if none yet).
+          if [ ${#WEB[@]} -gt 0 ]; then FIRST=$(git rev-parse "${WEB[0]}^1"); else FIRST=$GITHUB_SHA; fi
+          COMMITS=("$FIRST" "${WEB[@]}")
+          for n in "${!COMMITS[@]}"; do
+            TAG="web-$MM.$n"; SHA="${COMMITS[$n]}"
+            if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null; then
+              continue
+            fi
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$SHA" --silent
+            echo "Tagged ${SHA::8} as $TAG"
+          done
+          echo "This deploy is web-$VER"

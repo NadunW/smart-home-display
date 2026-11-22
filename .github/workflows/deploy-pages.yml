@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  # tag each released web version (web-x.y.z)
   pages: write
   id-token: write
   actions: write   # list and clear this run's own artifacts (see below)
@@ -42,6 +42,7 @@ jobs:
           BASE=$(git log -1 --format=%H -- VERSION)
           PATCH=$(git rev-list --count --first-parent "$BASE"..HEAD -- web)
           VER="$(tr -d '[:space:]' < VERSION).$PATCH"
+          echo "VER=$VER" >> "$GITHUB_ENV"
           BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           echo "Version $VER"
           sed -i "s/const BUILD='__BUILD__',VER='__VER__',BUILT='__BUILT__'/const BUILD='$GITHUB_SHA',VER='$VER',BUILT='$BUILT'/" web/index.html
@@ -80,3 +81,18 @@ jobs:
 
       - id: deployment
         uses: actions/deploy-pages@v5
+
+      # Tag the released commit as web-x.y.z so every version shown in the footer can be found
+      # in GitHub (Code → Tags). A redeploy of the same version (manual run, workflow-only change)
+      # keeps the tag where the version first went out.
+      - name: Tag this version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="web-$VER"
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null; then
+            echo "Tag $TAG already exists; leaving it as it is"
+          else
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" --silent
+            echo "Tagged $GITHUB_SHA as $TAG"
+          fi

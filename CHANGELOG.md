@@ -10,6 +10,9 @@ when they were merged.
 ### Display
 - *What to wear* shows a proper winter hat instead of a ball of yarn (#29).
 
+### Hosting
+- Every version of the display that goes live now gets a tag in GitHub (`web-1.0.13` and so on), so you can see exactly what each version contained. Earlier versions back to 1.0.0 get their tags the first time this runs (#31).
+
 ## 1.0.12 — 2026-11-22
 
 ### Display

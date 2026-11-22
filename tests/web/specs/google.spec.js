@@ -92,7 +92,8 @@ test('a task or someone without Google stays on the display only', async ({ page
 
 test('deleting an appointment from Google deletes it there too, and the dialog says so', async ({ page, display }) => {
   await display.open({ state: withGoogle() });
-  await display.box('today').getByRole('button', { name: /Dentist/ }).click();
+  const b = display.box('today').getByRole('button', { name: /Dentist/ });
+  await b.hover(); await page.mouse.down(); await page.clock.runFor(600); await page.mouse.up();
   const dlg = page.locator('#ovAdd');
   await expect(dlg.locator('#fGNote')).toHaveText(/dad@gmail\.com’s Google Calendar/);
   await dlg.getByRole('button', { name: 'Delete' }).click();

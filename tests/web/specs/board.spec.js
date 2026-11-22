@@ -212,7 +212,8 @@ test.describe('Weather tab', () => {
     await display.open({ storage: { 'fhd.tab': 'wx' } });
     const box = display.box('wear');
     await expect(box.locator('.wh')).toHaveText('Today 07–17 · feels 1° · rain likely');
-    await expect(box.locator('li')).toHaveText(['🧥Lined rain jacket and trousers', '🧶Thin hat', '🧤Gloves', '👢Lined rubber boots']);
+    await expect(box.locator('li')).toHaveText(['🧥Lined rain jacket and trousers', 'Thin hat', '🧤Gloves', '👢Lined rubber boots']);
+    await expect(box.locator('li').nth(1).locator('svg.beanie')).toBeVisible();
   });
 
   test('after 17:00 what to wear is for tomorrow', async ({ display }) => {

@@ -1,6 +1,6 @@
 // The family board: header, tabs, the Today/Bus/Tasks/Weather boxes and the slideshow.
 import { test, expect } from '../harness.js';
-import { NOW, TODAY, seed, warnings } from '../fixtures.js';
+import { NOW, TODAY, HH, seed, warnings } from '../fixtures.js';
 
 test.describe('header and footer', () => {
   test.beforeEach(async ({ display }) => { await display.open(); });
@@ -47,7 +47,7 @@ test.describe('header and footer', () => {
 });
 
 test.describe('tabs', () => {
-  const BOXES = { Today: ['today', 'soon', 'rems'], Bus: ['bus', 'trips'], Tasks: ['tasks'], Rewards: ['rw'], Weather: ['wxw', 'rain', 'wear', 'week', 'warn'] };
+  const BOXES = { Today: ['today', 'tmrw', 'soon', 'rems'], Bus: ['bus', 'trips'], Tasks: ['tasks'], Rewards: ['rw'], Weather: ['wxw', 'rain', 'wear', 'week', 'warn'] };
   const ALL = Object.values(BOXES).flat();
 
   test('each tab shows only its own boxes', async ({ display }) => {
@@ -93,6 +93,10 @@ test.describe('Today', () => {
     await expect(display.box('soon')).toContainText('Grandma visits');
     await expect(display.box('soon')).toContainText('Everyone · Sat 21');
     await expect(display.box('rems')).toContainText('Pack the gym bag');
+  });
+
+  test('Tomorrow says so when nothing is planned', async ({ display }) => {
+    await expect(display.box('tmrw')).toContainText('Nothing planned tomorrow.');
   });
 
   test('+ Add puts a new appointment on today’s list and saves it', async ({ page, display }) => {
@@ -317,4 +321,15 @@ test('on a phone the departures sit above the tabs, full width @phone', async ({
   expect(c.y + c.height).toBeLessThanOrEqual(t.y + 1);
   expect(c.width).toBeGreaterThan(t.width * 0.9);
   await page.screenshot({ path: test.info().outputPath('phone.png') });
+});
+
+test('Tomorrow shows tomorrow’s appointments, and Coming up starts after it', async ({ display }) => {
+  const st = seed();
+  st.db.items.push({ id: 'i-dentist', household_id: HH, type: 'event', title: 'Dentist', person_id: null, date: '2026-11-19', time: '09:30:00',
+    repeat: 'none', done: false, done_on: null, countdown: false });
+  await display.open({ state: st });
+  await expect(display.box('tmrw').locator('h2')).toHaveText(/Tomorrow\s*Thursday 19/);
+  await expect(display.box('tmrw')).toContainText('09:30Dentist');
+  await expect(display.box('soon')).not.toContainText('Dentist');
+  await expect(display.box('soon')).toContainText('Grandma visits');
 });

@@ -5,7 +5,7 @@
 // push others down when they would overlap. Phones show one column in the same order.
 // Every box lives on one tab; the defaults fill a landscape tablet (about 8 rows under the header).
 const COLS=12,LYK='fhd.layout2';
-const WDEF={today:{tab:'today',x:0,y:0,w:6,h:8,mw:3,mh:2},soon:{tab:'today',x:6,y:0,w:6,h:5,mw:3,mh:2},rems:{tab:'today',x:6,y:5,w:6,h:3,mw:3,mh:2},
+const WDEF={today:{tab:'today',x:0,y:0,w:6,h:5,mw:3,mh:2},tmrw:{tab:'today',x:0,y:5,w:6,h:3,mw:3,mh:2},soon:{tab:'today',x:6,y:0,w:6,h:5,mw:3,mh:2},rems:{tab:'today',x:6,y:5,w:6,h:3,mw:3,mh:2},
   bus:{tab:'bus',x:0,y:0,w:5,h:8,mw:3,mh:3},trips:{tab:'bus',x:5,y:0,w:7,h:8,mw:4,mh:3},tasks:{tab:'tasks',x:0,y:0,w:12,h:8,mw:3,mh:3},rw:{tab:'rw',x:0,y:0,w:12,h:8,mw:3,mh:2},
   wxw:{tab:'wx',x:0,y:0,w:8,h:3,mw:4,mh:3},rain:{tab:'wx',x:8,y:0,w:4,h:3,mw:3,mh:2},week:{tab:'wx',x:0,y:3,w:8,h:5,mw:4,mh:3},
   wear:{tab:'wx',x:8,y:3,w:4,h:3,mw:3,mh:2},warn:{tab:'wx',x:8,y:6,w:4,h:2,mw:3,mh:2}};
@@ -24,6 +24,8 @@ function settle(list,leadId,down){const L=list.map(b=>({...b})),lead=L.find(b=>b
 function loadLayout(){let s=[];try{s=JSON.parse(localStorage.getItem(LYK)||'[]')}catch(e){}if(!Array.isArray(s))s=[];
   // Saved before Trips existed: give the Bus tab its new default so Trips sits beside the departures.
   if(s.some(b=>b?.id==='bus')&&!s.some(b=>b?.id==='trips'))s=s.filter(b=>b?.id!=='bus');
+  // Saved before Tomorrow existed: Today gets its new, shorter default so Tomorrow fits under it.
+  if(s.some(b=>b?.id==='today')&&!s.some(b=>b?.id==='tmrw'))s=s.filter(b=>b?.id!=='today');
   // Saved before the Weather tab had more than one box: give it the new default too.
   if(s.some(b=>b?.id==='wxw')&&!s.some(b=>b?.id==='week'))s=s.filter(b=>b?.id!=='wxw');
   const all=Object.keys(WDEF).map(id=>fit({...WDEF[id],...(s.find(b=>b&&b.id===id)||{}),id}));

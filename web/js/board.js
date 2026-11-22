@@ -24,8 +24,12 @@ function render(){if(!hh)return;
   const t=ymd(now()),evs=items.filter(i=>i.type==='event'&&i.date).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
   const td=evs.filter(e=>e.date===t);
   $('#today').innerHTML=td.length?td.map(e=>evRow(e,false)).join(''):'<p class="empty">Nothing planned today.</p>';
-  const lim=ymd(new Date(Date.now()+14*864e5)),up=evs.filter(e=>e.date>t&&e.date<=lim).slice(0,6);
-  $('#soon').innerHTML=up.length?up.map(e=>evRow(e,true)).join(''):'<p class="empty">Nothing in the next two weeks.</p>';
+  // Tomorrow has its own box; Coming up starts the day after.
+  const tm=new Date(t+'T12:00');tm.setDate(tm.getDate()+1);const tmd=ymd(tm),tt=evs.filter(e=>e.date===tmd);
+  $('#tmrwH').innerHTML='Tomorrow <small>'+esc(tm.toLocaleDateString('en-GB',{weekday:'long',day:'numeric'}))+'</small>';
+  $('#tmrw').innerHTML=tt.length?tt.map(e=>evRow(e,false)).join(''):'<p class="empty">Nothing planned tomorrow.</p>';
+  const lim=ymd(new Date(Date.now()+14*864e5)),up=evs.filter(e=>e.date>tmd&&e.date<=lim).slice(0,6);
+  $('#soon').innerHTML=up.length?up.map(e=>evRow(e,true)).join(''):'<p class="empty">Nothing else in the next two weeks.</p>';
   const cd=evs.find(e=>e.countdown&&e.date>=t);
   if(cd){const n=Math.round((new Date(cd.date+'T00:00')-new Date(t+'T00:00'))/864e5);$('#count').innerHTML=`<div class="count"><b>${n?n+(n===1?' day':' days'):'Today!'}</b>${esc(cd.title)}</div>`}else $('#count').innerHTML='';
   const tasks=items.filter(i=>i.type==='task'),done=tasks.filter(isDone).length;

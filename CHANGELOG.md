@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.12 — 2026-11-22
+
+### Display
+- The Today tab has a new *Tomorrow* box under today's appointments, showing tomorrow's appointments. *Coming up* now starts the day after tomorrow (#28).
+
 ## 1.0.11 — 2026-11-21
 
 ### Display

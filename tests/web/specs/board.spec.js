@@ -334,3 +334,15 @@ test('Tomorrow shows tomorrow’s appointments, and Coming up starts after it', 
   await expect(display.box('soon')).not.toContainText('Dentist');
   await expect(display.box('soon')).toContainText('Grandma visits');
 });
+
+const iconsCentred = async ({ page, display }) => {
+  await display.open({ storage: { 'fhd.tab': 'bus' } });
+  for (const name of ['Add', 'Light/dark', 'Settings', 'Add a trip']) {
+    const btn = name === 'Light/dark' ? page.locator('#thBtn') : page.getByRole('button', { name, exact: true });
+    const b = await btn.boundingBox(), i = await btn.locator('svg:visible').boundingBox();
+    expect(Math.abs(i.x + i.width / 2 - (b.x + b.width / 2)), name).toBeLessThan(1.5);
+    expect(Math.abs(i.y + i.height / 2 - (b.y + b.height / 2)), name).toBeLessThan(1.5);
+  }
+};
+test('the icon buttons have their icon in the middle', iconsCentred);
+test('the icon buttons have their icon in the middle on a phone @phone', iconsCentred);

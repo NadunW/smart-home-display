@@ -73,7 +73,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .count{white-space:nowrap;background:var(--acc);color:#fff;border-radius:999px;padding:6px 16px;font-weight:500;font-size:17px;display:flex;align-items:baseline;gap:8px}.count b{font-size:22px;line-height:1.1}
 .tools{display:flex;gap:8px;margin-left:auto}
 /* Icon buttons (header, Pause/Play, + Trip): square, the name is in aria-label and the tooltip. */
-.ib{width:44px;padding:0;display:inline-grid;place-items:center}.ib svg{grid-area:1/1;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ib svg.f{fill:currentColor;stroke:none}
+.btn.ib{width:44px;padding:0;display:inline-grid;place-items:center}.ib svg{grid-area:1/1;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ib svg.f{fill:currentColor;stroke:none}
 #thBtn .sun,#thBtn.dk .moon{display:none}#thBtn.dk .sun{display:block}
 #rotBtn .play,#rotBtn[aria-pressed=false] .pause{display:none}#rotBtn[aria-pressed=false] .play{display:block}
 .btn{background:var(--card);padding:0 16px;font-weight:500}.btn.pri{background:var(--ink);color:var(--bg)}
@@ -125,7 +125,7 @@ h2{font-size:15px;font-weight:600;color:var(--mute);margin:0 0 10px}
 }
 .note{font-size:13px;color:var(--mute);margin:8px 0 0}
 /* Trips: saved trips with when to leave, when you arrive and the lines on the way. */
-.hbtn{position:absolute;top:10px;right:12px;min-height:36px;background:var(--bg)}.hbtn.ib{width:36px}.hbtn svg{width:20px;height:20px}
+.hbtn{position:absolute;top:10px;right:12px;min-height:36px;background:var(--bg)}.hbtn.btn.ib{width:36px}.hbtn svg{width:20px;height:20px}
 .trip{padding:10px 0;border-top:1px solid var(--line)}.trip:first-child{border-top:0;padding-top:0}
 .trip-h{display:flex;align-items:center;gap:10px}
 .trip-h .tn{flex:1;display:flex;align-items:center;gap:10px;text-align:left;padding:0;border-radius:10px}

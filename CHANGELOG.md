@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.15 — 2026-11-24
+
+### Display
+- The buttons at the top (*+ Add*, *Arrange*, *Settings*), *Pause/Play* next to the tabs and *+ Trip* are now small icons, like the light/dark button. On a phone they sit beside the clock instead of taking a whole row with a wide *+ Add* bar (#34).
+
 ## 1.0.14 — 2026-11-22
 
 ### Display

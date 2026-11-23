@@ -13,7 +13,7 @@ function applyTheme(){const p=themePref();let t='';
   const root=document.documentElement;if(t){if(root.dataset.theme!==t)root.dataset.theme=t}else delete root.dataset.theme;
   const dark=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
   $('meta[name=theme-color]').content=dark?'#121116':'#ffffff';
-  const b=$('#thBtn'),l=dark?'Switch to light':'Switch to dark';b.textContent=dark?'☀':'☾';b.title=l;b.setAttribute('aria-label',l)}
+  const b=$('#thBtn'),l=dark?'Switch to light':'Switch to dark';b.classList.toggle('dk',dark);b.title=l;b.setAttribute('aria-label',l)}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme)}catch(e){}
 $('#sTheme').onchange=e=>{try{localStorage.setItem(THK,e.target.value)}catch(err){}applyTheme()};
 // Quick switch in the header: flips to the opposite of what's showing and keeps it (Always light / Always dark).

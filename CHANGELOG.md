@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.16 — 2026-11-24
+
+### Display
+- The icons on the buttons now sit in the middle of each button instead of slightly to the right (#35).
+
 ## 1.0.15 — 2026-11-24
 
 ### Display

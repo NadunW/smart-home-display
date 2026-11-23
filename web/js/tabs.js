@@ -44,7 +44,7 @@ function nextTab(){const ids=rot.order.filter(tabOk),i=ids.indexOf(tab);
 function rotBar(ms){const b=$('#rotBar'),i=b.firstElementChild;i.style.transition='none';i.style.width='0';b.classList.toggle('off',!ms);
   if(ms){void i.offsetWidth;i.style.transition=`width ${ms}ms linear`;i.style.width='100%'}}
 function rotUi(){const b=$('#rotBtn'),held=rot.on&&rotHeld>Date.now();
-  b.textContent=!rot.on?'▶ Play':held?'▶ Resume':'⏸ Pause';b.setAttribute('aria-pressed',rot.on&&!held);
+  b.setAttribute('aria-label',!rot.on?'Play':held?'Resume':'Pause');b.setAttribute('aria-pressed',rot.on&&!held);
   b.title=!rot.on?'Change tabs by themselves':held?'Paused after a tap. Resume now':'Stop changing tabs by themselves'}
 function rotSchedule(){clearTimeout(rotT);rotT=0;rotUi();
   if(!rotCan()){rotBar(0);return}

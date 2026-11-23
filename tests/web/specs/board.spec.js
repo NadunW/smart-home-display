@@ -39,7 +39,7 @@ test.describe('header and footer', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('the ☀ button switches to always light and remembers it', async ({ page }) => {
+  test('the sun button switches to always light and remembers it', async ({ page }) => {
     await page.locator('#thBtn').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     expect(await page.evaluate(() => localStorage.getItem('fhd.theme'))).toBe('light');
@@ -99,8 +99,8 @@ test.describe('Today', () => {
     await expect(display.box('tmrw')).toContainText('Nothing planned tomorrow.');
   });
 
-  test('+ Add puts a new appointment on today’s list and saves it', async ({ page, display }) => {
-    await page.getByRole('button', { name: '+ Add' }).click();
+  test('Add puts a new appointment on today’s list and saves it', async ({ page, display }) => {
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
     const dlg = page.locator('#ovAdd');
     await dlg.getByRole('button', { name: 'Appointment' }).click();
     await dlg.getByLabel('What').fill('Dentist');
@@ -282,13 +282,13 @@ test.describe('slideshow', () => {
     await page.locator('#status').click();
     await page.clock.runFor(45_000);
     await expect(display.tab('Today')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#rotBtn')).toHaveText('▶ Resume');
+    await expect(page.locator('#rotBtn')).toHaveAttribute('aria-label', 'Resume');
   });
 
   test('Pause stops it until Play', async ({ page, display }) => {
     await display.open();
     await page.locator('#rotBtn').click();
-    await expect(page.locator('#rotBtn')).toHaveText('▶ Play');
+    await expect(page.locator('#rotBtn')).toHaveAttribute('aria-label', 'Play');
     await page.clock.runFor(120_000);
     await expect(display.tab('Today')).toHaveAttribute('aria-selected', 'true');
   });

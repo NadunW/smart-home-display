@@ -65,7 +65,7 @@ test('Connect Google Calendar sends the browser to Google’s sign-in', async ({
 
 test('an appointment added for Dad is sent to his Google Calendar', async ({ page, display }) => {
   await display.open({ state: withGoogle() });
-  await page.getByRole('button', { name: '+ Add' }).click();
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
   const dlg = page.locator('#ovAdd');
   await dlg.getByRole('button', { name: 'Appointment' }).click();
   await dlg.getByLabel('What').fill('Haircut');
@@ -80,7 +80,7 @@ test('an appointment added for Dad is sent to his Google Calendar', async ({ pag
 
 test('a task or someone without Google stays on the display only', async ({ page, display }) => {
   await display.open({ state: withGoogle() });
-  await page.getByRole('button', { name: '+ Add' }).click();
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
   const dlg = page.locator('#ovAdd');
   await dlg.getByRole('button', { name: 'Appointment' }).click();
   await dlg.getByLabel('What').fill('Football');

@@ -346,3 +346,36 @@ const iconsCentred = async ({ page, display }) => {
 };
 test('the icon buttons have their icon in the middle', iconsCentred);
 test('the icon buttons have their icon in the middle on a phone @phone', iconsCentred);
+
+test.describe('text size', () => {
+  const height = async (display, text) => (await display.box('today').getByText(text).boundingBox()).height;
+
+  test('Automatic makes the text bigger in a box with room to spare, without cutting off names', async ({ page, display }) => {
+    await display.open({ storage: { 'fhd.textsize': '1' } });
+    const normal = await height(display, 'Swimming');
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByLabel('Text size in the boxes').selectOption({ label: 'Automatic: bigger where a box has room to spare' });
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect.poll(() => height(display, 'Swimming')).toBeGreaterThan(normal * 1.4);
+    await display.tab('Bus').click();
+    await expect(display.box('bus')).toContainText('Eketrägatan');
+    for (const d of await display.box('bus').locator('.dep .d').all())
+      expect(await d.evaluate(e => { const r = document.createRange(); r.selectNodeContents(e); return r.getBoundingClientRect().width <= e.getBoundingClientRect().width; })).toBe(true);
+  });
+
+  test('a fixed size makes every box the same amount bigger, and is kept on this device', async ({ page, display }) => {
+    await display.open({ storage: { 'fhd.textsize': '1' } });
+    const normal = await height(display, 'Swimming');
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByLabel('Text size in the boxes').selectOption({ label: 'Largest' });
+    await expect.poll(async () => (await height(display, 'Swimming')) / normal).toBeGreaterThan(1.4);
+    expect((await height(display, 'Swimming')) / normal).toBeLessThan(1.6);
+    expect(await page.evaluate(() => localStorage.getItem('fhd.textsize'))).toBe('1.5');
+  });
+
+  test('phones keep the normal size on Automatic @phone', async ({ page, display }) => {
+    await display.open();
+    await expect(display.box('today')).toContainText('Swimming');
+    expect(await display.box('today').locator('.wb').evaluate(e => e.style.zoom)).toBe('');
+  });
+});

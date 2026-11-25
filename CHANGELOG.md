@@ -5,6 +5,11 @@ footer (see *Version number* in the README). Changes that don't touch the page
 (Android app, server, workflows) are listed under the version that was current
 when they were merged.
 
+## 1.0.17 — 2026-11-25
+
+### Display
+- New *Text size in the boxes* in Settings → Display. *Automatic* (the new default) makes the text, icons and bus numbers in each box as big as fits, so a box with only one or two things in it fills its empty space instead of leaving it blank; it never cuts off a bus destination or trip name that fit before. Or pick Normal, Large, Larger or Largest. Saved per device; the reward chart keeps its own size setting (#36).
+
 ## 1.0.16 — 2026-11-24
 
 ### Display

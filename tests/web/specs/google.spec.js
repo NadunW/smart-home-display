@@ -18,7 +18,11 @@ function withGoogle() {
     done: false, done_on: null, countdown: false, created_by: null, gcal_account: ACC, gcal_cal: 'dad@gmail.com', gcal_event: 'ev1', gcal_key: 'uid1', dur_min: 30 });
   return s;
 }
-const openSettings = async page => { await page.getByRole('button', { name: 'Settings' }).click(); return page.locator('#ovSet'); };
+const openSettings = async page => {
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.locator('#ovSet').getByRole('tab', { name: 'Calendar' }).click();
+  return page.locator('#ovSet');
+};
 
 test('the board asks the server to read the Google calendars when it opens', async ({ display }) => {
   await display.open({ state: withGoogle() });

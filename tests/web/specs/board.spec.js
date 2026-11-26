@@ -354,6 +354,7 @@ test.describe('text size', () => {
     await display.open({ storage: { 'fhd.textsize': '1' } });
     const normal = await height(display, 'Swimming');
     await page.getByRole('button', { name: 'Settings' }).click();
+    await page.locator('#ovSet').getByRole('tab', { name: 'Display' }).click();
     await page.getByLabel('Text size in the boxes').selectOption({ label: 'Automatic: bigger where a box has room to spare' });
     await page.getByRole('button', { name: 'Cancel' }).click();
     await expect.poll(() => height(display, 'Swimming')).toBeGreaterThan(normal * 1.4);
@@ -367,6 +368,7 @@ test.describe('text size', () => {
     await display.open({ storage: { 'fhd.textsize': '1' } });
     const normal = await height(display, 'Swimming');
     await page.getByRole('button', { name: 'Settings' }).click();
+    await page.locator('#ovSet').getByRole('tab', { name: 'Display' }).click();
     await page.getByLabel('Text size in the boxes').selectOption({ label: 'Largest' });
     await expect.poll(async () => (await height(display, 'Swimming')) / normal).toBeGreaterThan(1.4);
     expect((await height(display, 'Swimming')) / normal).toBeLessThan(1.6);

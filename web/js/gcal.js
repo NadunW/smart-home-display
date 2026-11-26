@@ -25,7 +25,7 @@ async function gRemove(it){const a=gOf(it);if(!a||!it.gcal_event)return;
 
 // ---------- Settings → Google Calendar ----------
 const gPeopleOpts=sel=>'<option value="">Everyone</option>'+people.map(p=>`<option value="${esc(p.id)}"${p.id===sel?' selected':''}>${esc(p.name)}</option>`).join('');
-function drawG(){const box=$('#gSet');if(!box)return;box.hidden=gOff;if(gOff)return;
+function drawG(){const box=$('#gSet');if(!box)return;box.hidden=gOff;syncSetSecs();if(gOff)return;
   const isOwner=hh?.created_by===user?.id;
   $('#gList').innerHTML=gAcc.length?gAcc.map(a=>{const mine=a.user_id===user?.id,dis=mine?'':' disabled',cals=a.calendars||[];
     const st=a.sync_error==='reconnect'?'<p class="msg err">Google needs this account to be connected again.</p>'

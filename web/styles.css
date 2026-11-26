@@ -164,6 +164,16 @@ hr{border:0;border-top:1px solid var(--line);margin:4px 0;width:100%}
 .rwk b{font-size:18px;font-weight:600}.rwk small{display:block;color:var(--mute);font-size:14px}
 .bal{font-size:34px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}.bal small{font-size:15px;color:var(--mute);font-weight:400}
 .goal{font-size:14px;color:var(--mute);display:flex;justify-content:space-between;gap:8px;margin:2px 0 4px}
+/* Settings: sections as tabs; a list on the left on wider screens, a row on top on phones. The dialog keeps one height so switching doesn't make it jump. */
+.dlg.set{width:min(820px,100%);height:min(660px,90vh);display:flex;flex-direction:column;overflow:hidden}
+.setbody{flex:1;min-height:0;display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px}
+.stabs{display:flex;flex-direction:column;gap:6px}
+.stabs button{background:var(--card);text-align:left;padding:0 16px;font-weight:500;font-size:16px;white-space:nowrap}
+.stabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.spanes{overflow:auto;min-height:0;margin:0 -6px;padding:0 6px 6px}
+.spane{display:grid;gap:10px;align-content:start}
+.spane h4{margin:8px 0 0;font-size:18px}.spane h4:first-child{margin-top:0}
+@media(max-width:699px){.dlg.set{height:90vh}.setbody{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:12px}.stabs{flex-direction:row;overflow-x:auto;scrollbar-width:none}.stabs button{flex:none;text-align:center}}
 .dlg.wide{width:min(1100px,100%);max-height:94vh;display:flex;flex-direction:column;overflow:hidden}#rwBody{overflow:auto;flex:1;margin:0 -6px;padding:0 6px 6px}
 .rwk .bal small{display:inline}
 /* The chart on the Rewards tab: tap a row to earn, tap a reward to spend (asks first). */

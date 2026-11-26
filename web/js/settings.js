@@ -1,13 +1,23 @@
-// Settings: family name, people, bus stop, town and join code.
+// Settings: family name, people, bus stop, town and join code; and the section tabs inside the dialog.
 /* ---------- settings ---------- */
 let draft=null;
+// The dialog's sections show one at a time, like the tabs on the board. Calendar is left out when Google sync isn't set up.
+let setSec='fam';
+const setSecs=()=>[...$('#setTabs').querySelectorAll('[data-st]')].filter(b=>!b.hidden);
+function showSetSec(id,focus){const ok=setSecs().find(b=>b.dataset.st===id)||setSecs()[0];setSec=ok.dataset.st;
+  $('#setTabs').querySelectorAll('[data-st]').forEach(b=>{const on=b===ok;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;$('#sp-'+b.dataset.st).hidden=!on});
+  $('#sp-'+setSec).parentElement.scrollTop=0;if(focus)ok.focus()}
+function syncSetSecs(){$('#stab-cal').hidden=$('#gSet').hidden;if($('#stab-'+setSec).hidden)showSetSec('fam')}
+$('#setTabs').onclick=e=>{const b=e.target.closest('[data-st]');if(b)showSetSec(b.dataset.st)};
+$('#setTabs').onkeydown=e=>{const d={ArrowLeft:-1,ArrowUp:-1,ArrowRight:1,ArrowDown:1}[e.key];if(!d)return;e.preventDefault();
+  const ids=setSecs().map(b=>b.dataset.st),i=ids.indexOf(setSec);showSetSec(ids[(i+d+ids.length)%ids.length],true)};
 function drawMems(){$('#mems').innerHTML=draft.people.length?draft.people.map((m,i)=>`<div class="mem"><input value="${esc(m.name)}" data-mi="${i}" aria-label="Name" maxlength="40" placeholder="Name"><input type="color" value="${esc(m.color)}" data-mc="${i}" aria-label="Colour"><button type="button" class="btn" data-mr="${i}" aria-label="Remove ${esc(m.name)}">×</button></div>`).join(''):'<p class="msg">No one added yet.</p>'}
 const PAL=['#e4572e','#2e86de','#9b59b6','#16a085','#f39c12','#d63384','#6c757d','#20c997'];
 function openSet(welcome){draft={people:people.map(p=>({...p})),gid:hh.vt_gid,stop:hh.vt_stop,place:hh.place,lat:hh.lat,lon:hh.lon};
   if(welcome&&!draft.people.length)draft.people.push({name:'',color:PAL[0]});
   $('#setWelcome').hidden=!welcome;$('#sName').value=hh.name;drawMems();$('#sStopQ').value='';$('#sStopRes').innerHTML='';$('#sPlaceQ').value='';$('#sPlaceRes').innerHTML='';
   $('#sStopCur').textContent=draft.stop?'Current stop: '+draft.stop:'No stop chosen yet.';$('#sPlaceCur').textContent=draft.place?'Current town: '+draft.place:'No town chosen yet.';
-  $('#sTheme').value=themePref();$('#sRwSize').value=rwSizePref();$('#sTextSize').value=tsPref();drawRot();fillScreenSettings();$('#sCode').textContent=hh.join_code;drawG();msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
+  $('#sTheme').value=themePref();$('#sRwSize').value=rwSizePref();$('#sTextSize').value=tsPref();drawRot();fillScreenSettings();$('#sCode').textContent=hh.join_code;drawG();syncSetSecs();showSetSec(welcome?'fam':setSec);msg($('#setMsg'),'');$('#ovSet').classList.add('on')}
 $('#setBtn').onclick=()=>openSet(false);
 $('#mems').oninput=e=>{const t=e.target;if(t.dataset.mi!=null)draft.people[t.dataset.mi].name=t.value;if(t.dataset.mc!=null)draft.people[t.dataset.mc].color=t.value};
 $('#mems').onclick=e=>{const i=e.target.closest('[data-mr]')?.dataset.mr;if(i!=null){draft.people.splice(+i,1);drawMems()}};

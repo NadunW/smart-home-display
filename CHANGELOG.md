@@ -8,7 +8,7 @@ when they were merged.
 ## 1.0.18 — 2026-11-26
 
 ### Display
-- Settings is split into sections you switch between: *Family* (name, people, invite code), *Places* (bus stop and weather town), *Display*, *Tabs* and *Calendar*, as a list on the left on the tablet and a row on top on a phone. No more long scrolling, and *Save*, *Cancel* and *Sign out* are always in view. Settings reopens on the section you used last (#PR).
+- Settings is split into sections you switch between: *Family* (name, people, invite code), *Places* (bus stop and weather town), *Display*, *Tabs* and *Calendar*, as a list on the left on the tablet and a row on top on a phone. No more long scrolling, and *Save*, *Cancel* and *Sign out* are always in view. Settings reopens on the section you used last (#).
 
 ## 1.0.17 — 2026-11-25
 
